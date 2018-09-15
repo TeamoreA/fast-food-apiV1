@@ -4,6 +4,7 @@ from app.V1.orders import APP
 
 
 class MyApiTests(unittest.TestCase):
+    """All tests are called here"""
 
     def setUp(self):
         """Define test variables and initialize app."""
