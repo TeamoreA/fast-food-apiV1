@@ -42,5 +42,21 @@ def return_one_order(order_id):
     # if order == "":
     #     abort(404)
     return jsonify({'Order': order})
+
+# Route containing function to add new order name
+
+
+@APP.route('/api/v1/orders', methods=['POST'])
+def add_order():
+    """adds a new order"""
+    request_data = request.get_json()
+    new_order = {
+        'id': ORDERS[-1]['id'] + 1,
+        'name': request_data["name"],
+        'price': request_data["price"]
+    }
+    ORDERS.append(new_order)
+    return jsonify({'Order': new_order}), 201
+
 if __name__ == '__main__':
     APP.run(debug=True)

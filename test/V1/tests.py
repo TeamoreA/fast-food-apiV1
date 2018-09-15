@@ -39,6 +39,15 @@ class MyApiTests(unittest.TestCase):
             test_resp.status_code, 200, msg='Expected 200'
         )
 
+    def test_create_new_order(self):
+        """ The test should return status code 200 for success (POST request)"""
+        test_resp = self.APP.post(
+            '/api/v1/orders',
+            data=json.dumps(self.sample_order),
+            headers={'content-type': 'application/json'}
+        )
+        self.assertEqual(test_resp.status_code, 201)
+
 
 if __name__ == '__main__':
     unittest.main()
