@@ -29,7 +29,7 @@ class MyApiTests(unittest.TestCase):
             test_resp.status_code, 200, msg='Expected 200'
         )
 
-        def test_api_can_get_one_order(self):
+    def test_api_can_get_one_order(self):
         """Test API can get a single order (GET request)."""
         test_resp = self.APP.get(
             '/api/v1/orders/1',
