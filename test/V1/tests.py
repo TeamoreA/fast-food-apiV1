@@ -48,6 +48,16 @@ class MyApiTests(unittest.TestCase):
         )
         self.assertEqual(test_resp.status_code, 201)
 
+    def test_api_can_update_an_order(self):
+        """Test API can update a specified order item (PUT request)."""
+
+        test_resp = self.APP.put(
+            '/api/v1/orders/1',
+            data=json.dumps(self.sample_order),
+            headers={'content-type': 'application/json'}
+        )
+        self.assertEqual(test_resp.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()
