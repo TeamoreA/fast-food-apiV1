@@ -63,11 +63,22 @@ def add_order():
 
 @APP.route('/api/v1/orders/<int:order_id>', methods=['PUT'])
 def edit_an_order(order_id):
+    """updates an order"""
     request_data = request.get_json()
     edit_order = [order for order in ORDERS if order['id'] == order_id]
     edit_order[0]['name'] = request_data['name']
     edit_order[0]['price'] = request_data['price']
     return jsonify({'Order': edit_order[0]})
+
+# this endpoint deletes the specified(using its id) order from dictionary
+
+
+@APP.route('/api/v1/orders/<int:order_id>', methods=['DELETE'])
+def delete_order(order_id):
+    """deletes an oder"""
+    order = [order for order in ORDERS if order['id'] == order_id]
+    ORDERS.remove(order[0])
+    return jsonify({'Orders': ORDERS})
 
 if __name__ == '__main__':
     APP.run(debug=True)

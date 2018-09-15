@@ -58,6 +58,14 @@ class MyApiTests(unittest.TestCase):
         )
         self.assertEqual(test_resp.status_code, 200)
 
+    def test_order_item_deletion(self):
+        """Test API can delete an existing orderitem. (DELETE request)."""
+        res = self.APP.delete(
+            '/api/v1/orders/2',
+            headers={'content-type': 'application/json'}
+        )
+        self.assertEqual(res.status_code, 200)
+
 
 if __name__ == '__main__':
     unittest.main()
