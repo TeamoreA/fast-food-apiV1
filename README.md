@@ -3,9 +3,9 @@
  ###### This is an API having endpoints to get a list of all order items, get a singe order item by specifying its id, update an order item and finally can delete the order item .
 
 
-[![Build Status](https://travis-ci.com/TeamoreA/fast-food-apiV1.svg?branch=master)](https://travis-ci.com/TeamoreA/fast-food-apiV1)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/875efc35a9ff3f32e748/test_coverage)](https://codeclimate.com/github/TeamoreA/fast-food-apiV1/test_coverage)
-[![Maintainability](https://api.codeclimate.com/v1/badges/875efc35a9ff3f32e748/maintainability)](https://codeclimate.com/github/TeamoreA/fast-food-apiV1/maintainability)
+[![Build Status](https://travis-ci.com/TeamoreA/fast-food-apiV1.svg?branch=ft-delete-an-order-160533580)](https://travis-ci.com/TeamoreA/fast-food-apiV1)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/test_coverage)](https://codeclimate.com/github/codeclimate/codeclimate/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a99a88d28ad37a79dbf6/maintainability)](https://codeclimate.com/github/codeclimate/codeclimate/maintainability)
 
 
 ## Aimed Functionalities Endpoints 
