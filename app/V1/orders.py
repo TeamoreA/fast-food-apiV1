@@ -1,28 +1,8 @@
+"""Order api endpoits"""
 from flask import Flask, jsonify, request
 APP = Flask(__name__)
 
-ORDERS = [
-    {
-        'id': 1,
-        "name": "Pizza",
-        "price": "$99"
-    },
-    {
-        'id': 2,
-        "name": "Chicken",
-        "price": "$550"
-    },
-    {
-        'id': 3,
-        "name": "Burger",
-        "price": "$490"
-    },
-    {
-        'id': 4,
-        "name": "French Fries",
-        "price": "$399"
-    }
-]
+ORDERS = []
 
 # Route containing function to return all orders
 
@@ -30,6 +10,8 @@ ORDERS = [
 @APP.route('/api/v1/orders', methods=['GET'])
 def return_all_orders():
     """returns all orders"""
+    if len(ORDERS) == 0:
+        return jsonify({'message': 'No orders found!'})
     return jsonify({'Orders': ORDERS})
 
 # Route containing function to return one order using its name
@@ -41,6 +23,8 @@ def return_one_order(order_id):
     order = [order for order in ORDERS if order['id'] == order_id]
     # if order == "":
     #     abort(404)
+    if not order:
+        return jsonify({'message': 'No order found with that id'})
     return jsonify({'Order': order})
 
 # Route containing function to add new order name
@@ -49,14 +33,18 @@ def return_one_order(order_id):
 @APP.route('/api/v1/orders', methods=['POST'])
 def add_order():
     """adds a new order"""
-    request_data = request.get_json()
+    request_data = request.get_json(force=True)
+    order = [order for order in ORDERS if order[
+        'name'] == request_data["name"]]
+    if order:
+        return jsonify({'message': 'Order already exists'})
     new_order = {
-        'id': ORDERS[-1]['id'] + 1,
+        'id': len(ORDERS) + 1,
         'name': request_data["name"],
         'price': request_data["price"]
     }
     ORDERS.append(new_order)
-    return jsonify({'Order': new_order}), 201
+    return jsonify({'Orders': ORDERS}), 201
 
 # Route with a function to update a single order
 
@@ -64,6 +52,10 @@ def add_order():
 @APP.route('/api/v1/orders/<int:order_id>', methods=['PUT'])
 def edit_an_order(order_id):
     """updates an order"""
+    order = [order for order in ORDERS if order['id'] == order_id]
+    if not order:
+        return jsonify({'message': 'No order found with that id'})
+
     request_data = request.get_json()
     edit_order = [order for order in ORDERS if order['id'] == order_id]
     edit_order[0]['name'] = request_data['name']
@@ -77,8 +69,10 @@ def edit_an_order(order_id):
 def delete_order(order_id):
     """deletes an oder"""
     order = [order for order in ORDERS if order['id'] == order_id]
+    if not order:
+        return jsonify({'message': 'No order found with that id'})
     ORDERS.remove(order[0])
-    return jsonify({'Orders': ORDERS})
+    return jsonify({'message': 'Order deleted successfully'}), 200
 
 if __name__ == '__main__':
     APP.run(debug=True)
