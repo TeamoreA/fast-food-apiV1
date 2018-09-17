@@ -58,9 +58,9 @@ def edit_an_order(order_id):
 
     request_data = request.get_json()
     edit_order = [order for order in ORDERS if order['id'] == order_id]
-    edit_order[0]['name'] = request_data['name']
-    edit_order[0]['price'] = request_data['price']
-    return jsonify({'Order': edit_order[0]})
+    edit_order['name'] = request_data['name']
+    edit_order['price'] = request_data['price']
+    return jsonify({'Order': edit_order})
 
 # this endpoint deletes the specified(using its id) order from dictionary
 
