@@ -1,1 +1,1 @@
-web: gunicorn app.V1.orders:APP
+web: gunicorn run:APP
