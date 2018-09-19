@@ -1,7 +1,9 @@
 """tests for orders.py file"""
 import unittest
 import json
-from myapp.V1.orders import Orders, Others, APP
+
+# local imports
+from app.api.V1.views import Orders, Others, APP
 
 
 class TestApi(unittest.TestCase):
@@ -73,6 +75,22 @@ class TestApi(unittest.TestCase):
             headers={'content-type': 'application/json'}
         )
         self.assertEqual(res.status_code, 200)
+
+    def test_that_order_cant_be_duplicate(self):
+        """ The test should return status code 200 for success (POST request)"""
+        test_resp = self.app.post(
+            '/api/v1/orders',
+            data=json.dumps(self.sample_order),
+            headers={'content-type': 'application/json'}
+        )
+        test_resp = self.app.post(
+            '/api/v1/orders',
+            data=json.dumps(self.sample_order),
+            headers={'content-type': 'application/json'}
+        )
+        # self.assertIn('Fish Pie', test_resp)
+        resp = json.loads(test_resp.data.decode('utf-8'))
+        self.assertEqual('Order already exists', resp['message'])
 
 
 if __name__ == '__main__':
