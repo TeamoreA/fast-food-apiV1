@@ -4,7 +4,7 @@ import json
 
 # local imports
 from app import create_app
-from app.api.V1.views import OrdersV1, OtherOrdersV1
+from app.api.V1.views import FoodItems, FoodItem
 
 
 class TestApi(unittest.TestCase):
@@ -12,18 +12,13 @@ class TestApi(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        self.orders = OrdersV1()
-        self.others = OtherOrdersV1()
-        # self.app = APP
+        self.orders = FoodItems()
+        self.others = FoodItem()
         self.app = create_app(config_name="testing").test_client()
         self.sample_order = {
             'name': 'Fish Pie',
             'price': 460
         }
-        # self.get_order = {
-        #     "name": "Pizza",
-        #     'price': '$460'
-        # }
 
     def test_api_can_get_all_orders(self):
         """Test API can get a  list of all Orders (GET request)."""
@@ -43,7 +38,6 @@ class TestApi(unittest.TestCase):
             data=json.dumps(self.sample_order),
             headers={'content-type': 'application/json'}
         )
-        # self.assertIn('Fish Pie', test_resp)
         self.assertEqual(test_resp.status_code, 200)
 
     def test_api_can_get_one_order(self):
@@ -92,22 +86,8 @@ class TestApi(unittest.TestCase):
             data=json.dumps(self.sample_order),
             headers={'content-type': 'application/json'}
         )
-        # self.assertIn('Fish Pie', test_resp)
         resp = json.loads(test_resp.data.decode('utf-8'))
         self.assertEqual('Order already exists', resp['message'])
-
-    # def test_that_user_should_be_authenticated(self):
-    #     """ The test should return status code 200 for success (POST request)"""
-    #     test_resp = self.app.post(
-    #         '/api/v1/orders',
-    #         data=json.dumps(self.sample_order),
-    #         headers={'content-type': 'application/json'}
-    #     )
-
-    #     # self.assertIn('Fish Pie', test_resp)
-    #     resp = json.loads(test_resp.data.decode('utf-8'))
-    #     self.assertEqual(
-    #         'Ensure you are logged in to get a token!', resp['message'])
 
 
 if __name__ == '__main__':
