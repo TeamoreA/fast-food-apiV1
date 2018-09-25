@@ -7,7 +7,7 @@ from instance.config import app_config
 from app.api.V1.views import OtherOrdersV1, OrdersV1
 # from app.api.V1.users import Users, OtherUsers
 # from app.api.V1.orders import Orders, OtherOrders
-from app.api.v2.database import Models
+# from app.api.v2.database import Models
 
 # init_db()
 
@@ -19,7 +19,7 @@ def create_app(config_name):
     app.config['SECRET_KEY'] = os.getenv('SECRET')
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
-    Models().init_db()
+    # Models().init_db()
     # version 1 routes
     api.add_resource(OrdersV1, '/api/v1/orders')
     api.add_resource(OtherOrdersV1, '/api/v1/orders/<int:order_id>')
