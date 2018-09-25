@@ -4,7 +4,7 @@ from flask import Flask
 from flask_restful import Resource, Api
 from instance.config import app_config
 # from app.api.v2.views import Users, OtherUsers, Orders, OtherOrders, Login
-from app.api.v1.views import OtherOrdersV1, OrdersV1
+from app.api.V1.views import OtherOrdersV1, OrdersV1
 # from app.api.V1.users import Users, OtherUsers
 # from app.api.V1.orders import Orders, OtherOrders
 from app.api.v2.database import Models

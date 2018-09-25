@@ -4,7 +4,7 @@ import json
 
 # local imports
 from app import create_app
-from app.api.v1.views import OrdersV1, OtherOrdersV1
+from app.api.V1.views import OrdersV1, OtherOrdersV1
 
 
 class TestApi(unittest.TestCase):
