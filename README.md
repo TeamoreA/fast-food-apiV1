@@ -16,6 +16,42 @@
 - A user can delete an order.
 
 
+<table>
+  <tr>
+    <th>Endpoint</th>
+    <th>HTTPS requests</th>
+    <th>Functionality</th>
+  </tr>
+  <tr>
+    <td> /api/v1/orders </td>
+    <td>GET</td>
+    <td>Get all the orderss</td>
+  </tr>
+  </tr>
+  <tr>
+    <td> /api/v1/orders/(int:order_id) </td>
+    <td>GET</td>
+    <td>Get a specific order</td>
+  </tr>
+  <tr>
+    <td> /api/v1/orders </td>
+    <td>POST</td>
+    <td>Create a new order</td>
+  </tr>
+  <tr>
+    <td> /api/v1/orders/(int:order_id) </td>
+    <td>PUT</td>
+    <td>Update an order</td>
+  </tr>
+  <tr>
+    <td> /api/v1/orders/(int:order_id) </td>
+    <td>DELETE</td>
+    <td>Delete an order</td>
+  </tr>
+</table>
+
+
+
 ## How to test locally
 
 - Clone the repo [HERE](https://github.com/TeamoreA/fast-food-apiV1).
