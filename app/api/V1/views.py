@@ -1,15 +1,21 @@
 """Order api endpoits"""
-from flask import Flask, jsonify, request
-from flask_restful import Resource, Api
-APP = Flask(__name__)
-API = Api(APP)
+# import os
+from flask import jsonify, request
+from flask_restful import Resource
+
+# APP = Flask(__name__)
+# API = Api(APP)
+
+# APP.config['SECRET_KEY'] = os.environ.get('APP_SETTINGS')
 
 ORDERS = []
+USERS = []
 
 
-class Orders(Resource):
+class OrdersV1(Resource):
     """major orders class"""
 
+    # @token
     def get(self):
         """returns all orders"""
         if len(ORDERS) == 0:
@@ -19,6 +25,7 @@ class Orders(Resource):
         response.status_code = 200
         return response
 
+    # @token
     def post(self):
         """adds a new order"""
         request_data = request.get_json(force=True)
@@ -37,7 +44,7 @@ class Orders(Resource):
         return response
 
 
-class Others(Resource):
+class OtherOrdersV1(Resource):
     """docstring for Others"""
 
     def get(self, order_id):
@@ -52,31 +59,28 @@ class Others(Resource):
         response.status_code = 200
         return response
 
+    # @token
     def put(self, order_id):
         """updates an order"""
+        request_data = request.get_json(force=True)
         order = [order for order in ORDERS if order['id'] == order_id]
         if not order:
             return jsonify({'message': 'No order found with that id'})
 
-        request_data = request.get_json(force=True)
-        edit_order = [order for order in ORDERS if order['id'] == order_id]
-        edit_order[0]['name'] = request_data['name']
-        edit_order[0]['price'] = request_data['price']
-        response = jsonify({'Order': edit_order})
+        # edit_order = [order for order in ORDERS if order['id'] == order_id]
+        order[0]['name'] = request_data['name']
+        order[0]['price'] = request_data['price']
+        response = jsonify({'Order': order})
         response.status_code = 201
         return response
 
+    # @token
     def delete(self, order_id):
         """deletes an oder"""
         order = [order for order in ORDERS if order['id'] == order_id]
         if not order:
             return jsonify({'message': 'No order found with that id'})
         ORDERS.remove(order[0])
-        # return jsonify({'message': 'Order deleted successfully'}), 200
         response = jsonify({'message': 'Order deleted successfully'})
         response.status_code = 200
         return response
-
-
-API.add_resource(Orders, '/api/v1/orders')
-API.add_resource(Others, '/api/v1/orders/<int:order_id>')
