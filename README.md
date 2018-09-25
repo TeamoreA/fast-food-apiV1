@@ -16,36 +16,39 @@
 - A user can delete an order.
 
 
-## How to use locally
+## How to test locally
 
 - Clone the repo [HERE](https://github.com/TeamoreA/fast-food-apiV1).
+- cd to project folder `fast-food-apiV1`
+- Install virtual environment and activate it
+ ```pip install virtualenv
+    source venv/Scripts/activate
+  ```   
 - Install all the depedencies in requirements.txt
 `pip install -r requirements.txt`
-- Create a virtual environment
 - Export this in your .env file
  ```
   source venv/Scripts/activate
   export FLASK_APP = 'run.py'
   export SECRET = 'Your url goes here'
   export FLASK_ENV = 'development'
-  export DATABASE_URL = "Your database url goes here"
 ```
 - In the project folder run `flask run`
 
 
 ## How to use it
 
-- After the above installations use post man to test the following end-points
-    - In order to start you must be reqistered run the POST method with route - `/api/v1/users`
-    - The login to get the x-acces-token for authorization with GET method wit route - `/api/v1/login`
-    - To see all users run the GET route - `/api/v1/users`
-    - To see one user run the GET route - `/api/v1/users/<int:user_id>`
-    - To update one user run the PUT route - `/api/v1/orders/<int:user_id>`
-    - To see all orders run the GET route - `/api/v1/orders`
-    - To see one order run the GET route - `/api/v1/orders/<int:order_id>`
-    - To create an order run the POST route - `/api/v1/orders`
-    - To update an order run the PUT route - `/api/v1/orders/<int:order_id>`
-    - To delete an order run the DELETE route - `/api/v1/orders/<int:order_id>`
+- After the above installations use *POSTMAN* to test the following end-points
     
+    - To see all orders run the GET route - `/api/v1/orders`
+    ![screenshot 66](https://user-images.githubusercontent.com/29709981/45215245-8a091880-b2a5-11e8-85ba-c0d8f32ef22b.png)
+    - To see one order run the GET route - `/api/v1/orders/<int:order_id>`
+     ![screenshot 67](https://user-images.githubusercontent.com/29709981/45215266-9b522500-b2a5-11e8-96fa-256cd04fe3db.png)
+    - To create an order run the POST route - `/api/v1/orders`
+    ![screenshot 68](https://user-images.githubusercontent.com/29709981/45215276-a3aa6000-b2a5-11e8-98b9-4015f78eb547.png)
+    - To update an order run the PUT route - `/api/v1/orders/<int:order_id>`
+    ![screenshot 69](https://user-images.githubusercontent.com/29709981/45215281-a9a04100-b2a5-11e8-9d8d-d33ffc740a8e.png)
+    - To delete an order run the DELETE route - `/api/v1/orders/<int:order_id>`
+    ![screenshot 70](https://user-images.githubusercontent.com/29709981/45215293-b58c0300-b2a5-11e8-9c34-ce431663f814.png)
 
  
