@@ -21,8 +21,13 @@
 - Install all the depedencies in requirements.txt
 - Run the file orders.py (python orders.py)
 - Using Postman app to test the endpoints
+    ##In order to start you must be reqistered run the POST method with route - /api/v1/users
+    ##The login to get the x-acces-token for authorization with GET method wit route - /api/v1/login
+    ##To see all users run the GET route - /api/v1/users
+    ##To see one user run the GET route - /api/v1/users/<int:user_id>
+    ##To update one user run the PUT route - /api/v1/orders/<int:user_id>
     ##To see all orders run the GET route - /api/v1/orders
-    ##To see one order run the GET route - /api/v1/orders/(1)
-    ##To see create an order run the POST route - /api/v1/orders
-    ##To see update an order run the PUT route - /api/v1/orders/(1)
-    ##To see delete an order run the DELETE route - /api/v1/orders/(1)
+    ##To see one order run the GET route - /api/v1/orders/<int:order_id>
+    ##To create an order run the POST route - /api/v1/orders
+    ##To update an order run the PUT route - /api/v1/orders/<int:order_id>
+    ##To delete an order run the DELETE route - /api/v1/orders/<int:order_id>
