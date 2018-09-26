@@ -1,7 +1,8 @@
 # orders-api
 
- ###### This is an API having endpoints to get a list of all order items, get a singe order item by specifying its id, update an order item and finally can delete the order item .
+ Thanks for choosing this API.This is a simple order management app.This RESTful-api has been written in python and flask.This api enables you to create an order, see all the orders that you have created, getting a specific order, update an order and finally to delete an order.This is the stable version (V1). Follow the guide below on how to use it.
 
+## Badges
 
 [![Build Status](https://travis-ci.com/TeamoreA/fast-food-apiV1.svg?branch=fixes-160551023)](https://travis-ci.com/TeamoreA/fast-food-apiV1)
 [![Coverage Status](https://coveralls.io/repos/github/TeamoreA/fast-food-apiV1/badge.svg?branch=fixes-160551023)](https://coveralls.io/github/TeamoreA/fast-food-apiV1?branch=fixes-160551023)
