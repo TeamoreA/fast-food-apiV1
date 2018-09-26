@@ -7,6 +7,8 @@
 [![Coverage Status](https://coveralls.io/repos/github/TeamoreA/fast-food-apiV1/badge.svg?branch=fixes-160551023)](https://coveralls.io/github/TeamoreA/fast-food-apiV1?branch=fixes-160551023)
 [![Maintainability](https://api.codeclimate.com/v1/badges/875efc35a9ff3f32e748/maintainability)](https://codeclimate.com/github/TeamoreA/fast-food-apiV1/maintainability)
 
+## Basic requirements
+- Python 3
 
 ## Aimed Functionalities Endpoints 
 - A user can view all orders
@@ -14,7 +16,6 @@
 - A user can create an order.
 - A user can update an order.
 - A user can delete an order.
-
 
 <table>
   <tr>
@@ -51,7 +52,6 @@
 </table>
 
 
-
 ## How to test locally
 
 - Clone the repo [HERE](https://github.com/TeamoreA/fast-food-apiV1).
@@ -71,6 +71,10 @@
 ```
 - In the project folder run `flask run`
 
+## How to run tests to get the code coverage
+- Install coveralls `pip install coveralls`
+- cd to project folder `fast-food-apiV1`
+- Run the following command in the command line `nosetests --with-coverage --cover-erase --cover-package=app/`
 
 ## How to use it
 
