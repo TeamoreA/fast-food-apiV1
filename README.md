@@ -73,8 +73,8 @@
 
 ## How to run tests to get the code coverage
 - Install coveralls `pip install coveralls`
-- cd to project folder `fast-food-apiV1`
-- Run the following command in the command line `nosetests --with-coverage --cover-erase --cover-package=app/`
+- cd to project folder `cd fast-food-apiV1`
+- Run the following command in the command line `nosetests --with-coverage --cover-erase --cover-package=app/test`
 
 ## How to use it
 
