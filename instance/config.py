@@ -18,7 +18,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """When its under testing mode"""
     TESTING = True
-    DATABASE_URI = "dbname='db1' host= '127.0.0.1' port='5432' user='postgres' password=''"
+    DATABASE_URI = "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''"
     DEBUG = True
 
 app_config = {
