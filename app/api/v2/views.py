@@ -3,8 +3,10 @@ import datetime
 import os
 from flask import jsonify, request, json
 from flask_restful import Resource
+from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import psycopg2
+from .models import token
 
 
 conn = psycopg2.connect(os.getenv('DATABASE_URL'))
@@ -13,7 +15,8 @@ cur = conn.cursor()
 
 class Users(Resource):
 
-    def get(self):
+    @token
+    def get(self, active_user):
         '''return all users'''
         cur.execute('SELECT * FROM users;')
         users = cur.fetchall()
@@ -54,8 +57,8 @@ class Users(Resource):
 
 class PromoteUser(Resource):
     """docstring for OtherUsers"""
-
-    def put(self, user_id):
+    @token
+    def put(self, active_user, user_id):
         """Updates users password"""
         request_data = request.get_json(force=True)
         cur.execute('SELECT * FROM users WHERE id = (%s);', (1,))
@@ -75,8 +78,8 @@ class PromoteUser(Resource):
 
 class User(Resource):
     """docstring for OtherUsers"""
-
-    def put(self, user_id):
+    @token
+    def put(self, active_user, user_id):
         """Updates users password"""
         request_data = request.get_json(force=True)
         cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
@@ -93,7 +96,8 @@ class User(Resource):
         response.status_code = 201
         return response
 
-    def get(self, user_id):
+    @token
+    def get(self, active_user, user_id):
         '''returns one user'''
         cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
         user = cur.fetchone()
@@ -108,7 +112,8 @@ class User(Resource):
         response.status_code = 200
         return response
 
-    def delete(self, user_id):
+    @token
+    def delete(self, active_user, user_id):
         """deletes a user"""
         cur.execute('SELECT * FROM users WHERE name = (%s);', (user_id,))
         user = cur.fetchone()
@@ -119,6 +124,31 @@ class User(Resource):
         response = jsonify({'message': 'User deleted successfully'})
         response.status_code = 200
         return response
+
+
+class Login(Resource):
+    """docstring for Login"""
+
+    def post(self):
+        """login route"""
+        auth = request.authorization
+        if not auth or not auth.username or not auth.password:
+            response = jsonify({'message', 'Login is required!'})
+            response.status_code = 401
+            return response
+        cur.execute('SELECT * FROM users WHERE name = (%s);', (auth.username,))
+        user = cur.fetchone()
+        if not user:
+            response = jsonify({'message', 'User not found!'})
+            response.status_code = 401
+            return response
+        if check_password_hash(user[2], auth.password):
+            token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
+            ) + datetime.timedelta(minutes=45)}, os.getenv('SECRET'))
+            return jsonify({'token': token.decode('UTF-8')})
+        response = jsonify({'message', 'Login required!'})
+        response.status_code = 401
+        # return response
 
 
 class MenuItems(Resource):
@@ -141,7 +171,8 @@ class MenuItems(Resource):
         response.status_code = 200
         return response
 
-    def post(self):
+    @token
+    def post(self, active_user):
         """adds a new order"""
         if not active_user['admin']:
             return jsonify({'message': 'Can not perfom this action!'})
@@ -161,8 +192,8 @@ class MenuItems(Resource):
 
 class OrderItems(Resource):
     """major orders class"""
-
-    def get(self):
+    @token
+    def get(self, active_user):
         """returns all orders"""
         cur.execute(
             'SELECT * FROM orders WHERE user_id = (%s);', [active_user['id']])
@@ -182,7 +213,8 @@ class OrderItems(Resource):
         response.status_code = 200
         return response
 
-    def post(self):
+    @token
+    def post(self, active_user):
         """adds a new order"""
         request_data = request.get_json(force=True)
         # cur.execute('SELECT * FROM users WHERE name = (%s);',
