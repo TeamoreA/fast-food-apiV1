@@ -14,7 +14,7 @@ class TestApi(unittest.TestCase):
         """Define test variables and initialize app."""
         self.orders = FoodItems()
         self.others = FoodItem()
-        self.app = create_app(config_name="testing").test_client()
+        self.app = create_app("testing").test_client()
         self.sample_order = {
             'name': 'Fish Pie',
             'price': 460
