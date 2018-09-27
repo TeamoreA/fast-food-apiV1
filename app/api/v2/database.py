@@ -36,30 +36,15 @@ class Models():
             """)
         conn = None
         try:
-            # read the connection parameters
-            # read the connection parameters
-            # db_url = os.getenv('DATABASE_URL')
-            # url = urlparse.urlparse(db_url)
-            # db = "dbname=%s user=%s password=%s host=%s " % (
-            #     url.path[1:], url.username, url.password, url.hostname)
-
             conn = psycopg2.connect(os.getenv('DATABASE_URL'))
             cur = conn.cursor()
             for query in queries:
                 cur.execute(query)
             cur.close()
             conn.commit()
-            # response = {"Success ": "tables created successfully"}
-            # print("Open")
         except (Exception, psycopg2.DatabaseError) as error:
             response = {"Error": error}
             print(error)
         finally:
             if conn is not None:
                 conn.close()
-                # print("Closed")
-        # return response
-        # print("Final")
-
-# if __name__ == '__main__':
-#     Models().init_db()
