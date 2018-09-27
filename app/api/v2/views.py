@@ -9,7 +9,8 @@ import psycopg2
 from .models import token
 
 
-conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+conn = psycopg2.connect(
+    "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
 cur = conn.cursor()
 
 
