@@ -11,6 +11,116 @@ conn = psycopg2.connect(os.getenv('DATABASE_URL'))
 cur = conn.cursor()
 
 
+class Users(Resource):
+
+    def get(self):
+        '''return all users'''
+        cur.execute('SELECT * FROM users;')
+        users = cur.fetchall()
+        if not users:
+            return jsonify({"message": "No user has been created yet"})
+        users_list = []
+        for user in users:
+            user_details = {}
+            user_details['id'] = user[0]
+            user_details['name'] = user[1]
+            user_details['password'] = user[2]
+            user_details['admin'] = user[3]
+            users_list.append(user_details)
+        response = jsonify({"Users": users_list})
+        response.status_code = 200
+        return response
+
+    def post(self):
+        """method to get all users"""
+        request_data = request.get_json(force=True)
+        if not request.json:
+            return jsonify({'message': 'check the input fields and try again'})
+        cur.execute('SELECT * FROM users WHERE name = (%s);',
+                    (request_data['name'],))
+        user = cur.fetchone()
+        if user:
+            return jsonify({'message': 'User already exists'})
+        hashed_pw = generate_password_hash(
+            request_data['password'], method='sha256')
+        cur.execute("INSERT INTO users (name, password) VALUES (%s, %s)",
+                    (request_data["name"], hashed_pw))
+        conn.commit()
+        response = jsonify(
+            {'Message': 'New user has been created successfully'})
+        response.status_code = 201
+        return response
+
+
+class PromoteUser(Resource):
+    """docstring for OtherUsers"""
+
+    def put(self, user_id):
+        """Updates users password"""
+        request_data = request.get_json(force=True)
+        cur.execute('SELECT * FROM users WHERE id = (%s);', (1,))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({'message': 'Sorry you can not perform this function'})
+
+        hashed_pw = generate_password_hash(
+            request_data['password'], method='sha256')
+        cur.execute('UPDATE users SET admin = (%s) WHERE id = (%s);',
+                    (True, user_id))
+        conn.commit()
+        response = jsonify({"message": "User is an admin now"})
+        response.status_code = 201
+        return response
+
+
+class User(Resource):
+    """docstring for OtherUsers"""
+
+    def put(self, user_id):
+        """Updates users password"""
+        request_data = request.get_json(force=True)
+        cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({'message': 'No user found with that id'})
+
+        hashed_pw = generate_password_hash(
+            request_data['password'], method='sha256')
+        cur.execute('UPDATE users SET name = (%s), password = (%s) WHERE id = (%s);',
+                    (request_data['name'], hashed_pw, user_id))
+        conn.commit()
+        response = jsonify({"message": "User details edited successfully"})
+        response.status_code = 201
+        return response
+
+    def get(self, user_id):
+        '''returns one user'''
+        cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({"message": "No user was found with that id"})
+        user_details = {}
+        user_details['id'] = user[0]
+        user_details['name'] = user[1]
+        user_details['password'] = user[2]
+        user_details['admin'] = user[3]
+        response = jsonify({'User': user_details})
+        response.status_code = 200
+        return response
+
+    def delete(self, user_id):
+        """deletes a user"""
+        cur.execute('SELECT * FROM users WHERE name = (%s);', (user_id,))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({'message': 'No user found with that name, The name is case sensitive'})
+        cur.execute('DELETE FROM users WHERE name = (%s);', (user_id,))
+        conn.commit()
+        response = jsonify({'message': 'User deleted successfully'})
+        response.status_code = 200
+        return response
+
+
 class MenuItems(Resource):
     """major orders class"""
 
