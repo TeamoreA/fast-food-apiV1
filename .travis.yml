@@ -14,7 +14,7 @@ install:
 
 before_script:
   - psql -c 'CREATE DATABASE fooddb' -U postgres
-  - psql -c 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMMA public'
+  - psql -c 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public'
 
 script:
   - nosetests --with-coverage --cover-erase --cover-package=app/test
