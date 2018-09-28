@@ -22,11 +22,16 @@ class TestApi(unittest.TestCase):
 
     def test_api_can_get_all_orders(self):
         """Test API can get a  list of all Orders (GET request)."""
+        test_resp = self.app.post(
+            '/api/v1/orders',
+            data=json.dumps(self.sample_order),
+            headers={'content-type': 'application/json'}
+        )
         test_resp = self.app.get(
             '/api/v1/orders',
             headers={'content-type': 'application/json'}
         )
-
+        self.assertIn('Fish Pie', str(test_resp.data))
         self.assertEqual(
             test_resp.status_code, 200, msg='Expected 200'
         )
@@ -38,7 +43,7 @@ class TestApi(unittest.TestCase):
             data=json.dumps(self.sample_order),
             headers={'content-type': 'application/json'}
         )
-        self.assertEqual(test_resp.status_code, 200)
+        self.assertIn('already exists', str(test_resp.data))
 
     def test_api_can_get_one_order(self):
         """Test API can get a single order (GET request)."""
@@ -51,6 +56,7 @@ class TestApi(unittest.TestCase):
             '/api/v1/orders/1',
             headers={'content-type': 'application/json'}
         )
+        self.assertIn('Fish Pie', str(test_resp.data))
         self.assertEqual(
             test_resp.status_code, 200, msg='Expected 200'
         )
@@ -69,9 +75,10 @@ class TestApi(unittest.TestCase):
         """Test API can delete an existing orderitem. (DELETE request)."""
 
         res = self.app.delete(
-            '/api/v1/orders/2',
+            '/api/v1/orders/1',
             headers={'content-type': 'application/json'}
         )
+        self.assertIn("Order deleted successfully", str(res.data))
         self.assertEqual(res.status_code, 200)
 
     def test_that_order_cant_be_duplicate(self):
