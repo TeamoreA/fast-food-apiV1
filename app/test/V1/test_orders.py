@@ -17,7 +17,7 @@ class TestApi(unittest.TestCase):
         self.app = create_app("testing").test_client()
         self.sample_order = {
             'name': 'Fish Pie',
-            'price': 460
+            'price': '600'
         }
 
     def test_api_can_get_all_orders(self):

@@ -1,9 +1,6 @@
 """my models to create tables"""
 import os
-from urllib import parse as urlparse
 import psycopg2
-# from urllib import parse
-# from flask import jsonify
 
 
 class Models():

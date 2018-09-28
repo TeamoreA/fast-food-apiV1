@@ -61,14 +61,14 @@ class PromoteUser(Resource):
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
-        request_data = request.get_json(force=True)
+        # request_data = request.get_json(force=True)
         cur.execute('SELECT * FROM users WHERE id = (%s);', (1,))
         user = cur.fetchone()
         if not user:
             return jsonify({'message': 'Sorry you can not perform this function'})
 
-        hashed_pw = generate_password_hash(
-            request_data['password'], method='sha256')
+        # hashed_pw = generate_password_hash(
+        #     request_data['password'], method='sha256')
         cur.execute('UPDATE users SET admin = (%s) WHERE id = (%s);',
                     (True, user_id))
         conn.commit()
@@ -196,19 +196,22 @@ class OrderItems(Resource):
     @token
     def get(self, active_user):
         """returns all orders"""
-        cur.execute(
-            'SELECT * FROM orders WHERE user_id = (%s);', [active_user['id']])
+        if not active_user['admin']:
+            return jsonify({"message": "Cannot perform this action"})
+        cur.execute('SELECT * FROM orders;')
         orders = cur.fetchall()
         if not orders:
             return jsonify({'message': 'No orders found!'})
-
         order_list = []
         for order in orders:
+            cur.execute('SELECT * FROM users WHERE id = (%s);',
+                        [order[3]])
+            user = cur.fetchone()
             orders_dict = {}
             orders_dict['id'] = order[0]
             orders_dict['name'] = order[1]
             orders_dict['status'] = order[2]
-            orders_dict['ordered_by'] = active_user['name']
+            orders_dict['ordered_by'] = user[1]
             order_list.append(orders_dict)
         response = jsonify({'Orders': order_list})
         response.status_code = 200
@@ -218,10 +221,6 @@ class OrderItems(Resource):
     def post(self, active_user):
         """adds a new order"""
         request_data = request.get_json(force=True)
-        # cur.execute('SELECT * FROM users WHERE name = (%s);',
-        #             ('Admin',))
-        # user = cur.fetchone()
-
         cur.execute('SELECT * FROM food_items WHERE name = (%s);',
                     (request_data['name'],))
         confirm_order = cur.fetchone()
@@ -249,24 +248,33 @@ class OrderItems(Resource):
 class OrderItem(Resource):
     """docstring for Others"""
 
-    # @token
-    def get(self, order_id):
+    @token
+    def get(self, active_user, order_id):
         '''returns one order'''
-        cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
-        order = cur.fetchone()
-        if not order:
-            return jsonify({"message": "No order was found with that id"})
-        order_details = {}
-        order_details['id'] = order[0]
-        order_details['name'] = order[1]
-        order_details['status'] = order[2]
-        response = jsonify({'order': order_details})
+
+        cur.execute('SELECT * FROM orders WHERE user_id = (%s);', (order_id,))
+        orders = cur.fetchall()
+        if not orders:
+            return jsonify({"message": "No orders found for that user"})
+        order_list = []
+        for order in orders:
+            cur.execute('SELECT * FROM users WHERE id = (%s);', [order[3]])
+            user = cur.fetchone()
+            order_details = {}
+            order_details['id'] = order[0]
+            order_details['name'] = order[1]
+            order_details['status'] = order[2]
+            order_details['ordered_by'] = user[1]
+            order_list.append(order_details)
+        response = jsonify({'orders': order_list})
         response.status_code = 200
         return response
 
-    # @token
-    def put(self, order_id):
+    @token
+    def put(self, active_user, order_id):
         """updates an order"""
+        if not active_user['admin']:
+            return jsonify({"message": "Cannot perform this action"})
         request_data = request.get_json(force=True)
         cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
         order = cur.fetchone()
@@ -279,13 +287,17 @@ class OrderItem(Resource):
         response.status_code = 201
         return response
 
-    # @token
-    def delete(self, order_id):
+    @token
+    def delete(self, active_user, order_id):
         """deletes an oder"""
         cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
         order = cur.fetchone()
         if not order:
             return jsonify({'message': 'No order found with that id'})
+        cur.execute('SELECT * FROM users WHERE id = (%s);', (order[3],))
+        user = cur.fetchone()
+        if not user:
+            return jsonify({'message': 'Permission denied! This is not your order item'})
         cur.execute('DELETE FROM orders WHERE id = (%s);', (order_id,))
         conn.commit()
         response = jsonify({'message': 'Order deleted successfully'})
