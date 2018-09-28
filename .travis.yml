@@ -1,7 +1,7 @@
 language: python
 
 env: 
-  DATABASE_URL = "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''" 
+  DATABASE_URL = "postgres://zdqbfozzawwxpp:06212891ab111f74ac6455befaa28595f2f9ccb5996f5da4f94d2681e47b7b53@ec2-107-21-98-165.compute-1.amazonaws.com:5432/d6s5c7nj79e8ub" 
   FLASK_ENV = 'testing'
 
 python:
@@ -9,7 +9,7 @@ python:
 
 install:
   - pip install -r requirements.txt
-  - pip install coveralls
+  - pip install coverallsl
 
 before_script:
   - psql -c 'CREATE DATABASE fooddb' -U postgres
