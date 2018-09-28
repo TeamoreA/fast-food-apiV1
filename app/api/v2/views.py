@@ -221,6 +221,8 @@ class OrderItems(Resource):
     def post(self, active_user):
         """adds a new order"""
         request_data = request.get_json(force=True)
+        if request_data["name"] == "" or request_data["price"] == "":
+            return jsonify({'message': 'Name field must be filled.'})
         cur.execute('SELECT * FROM food_items WHERE name = (%s);',
                     (request_data['name'],))
         confirm_order = cur.fetchone()
@@ -276,6 +278,8 @@ class OrderItem(Resource):
         if not active_user['admin']:
             return jsonify({"message": "Cannot perform this action"})
         request_data = request.get_json(force=True)
+        if request_data["name"] == "" or request_data["price"] == "":
+            return jsonify({'message': 'Name field must be filled.'})
         cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
         order = cur.fetchone()
         if not order:
