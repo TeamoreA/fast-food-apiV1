@@ -73,12 +73,56 @@ def single_menu_name(menuname):
 
 
 def get_all_menuitems():
+    """gets all menu items"""
     cur.execute('SELECT * FROM food_items;')
     orders = cur.fetchall()
     return orders
 
 
 def get_all_orders():
+    """gets all orders"""
     cur.execute('SELECT * FROM orders;')
     orders = cur.fetchall()
     return orders
+
+
+def post_order_item(name, user_id):
+    """creates a new order"""
+    cur.execute("INSERT INTO orders (name, user_id) VALUES (%s, %s)",
+                (name, user_id))
+    conn.commit()
+
+
+def check_user_orders(order_id):
+    """Checks orders of a specific user"""
+    cur.execute('SELECT * FROM orders WHERE user_id = (%s);', (order_id,))
+    orders = cur.fetchall()
+    return orders
+
+
+def single_order_id(order_id):
+    """selects specific orders"""
+    cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
+    order = cur.fetchone()
+    return order
+
+
+def update_order(status, order_id):
+    """Updates an order"""
+    cur.execute('UPDATE orders SET status = (%s) WHERE id = (%s);',
+                (status, order_id))
+    conn.commit()
+
+
+def single_order_user_id(name, user_id):
+    """matching user with the orders"""
+    cur.execute('SELECT * FROM orders WHERE name = (%s) AND user_id = (%s);',
+                (name, user_id))
+    order = cur.fetchone()
+    return order
+
+
+def delete_order(order_id):
+    """delete an order"""
+    cur.execute('DELETE FROM orders WHERE id = (%s);', (order_id,))
+    conn.commit()

@@ -5,17 +5,12 @@ from flask import jsonify, request
 from flask_restful import Resource
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import psycopg2
 from .models import token
 from .datamodels import get_all_users, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
-    get_all_orders
-
-
-conn = psycopg2.connect(
-    "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
-cur = conn.cursor()
+    get_all_orders, post_order_item, check_user_orders, delete_order,\
+    single_order_id, update_order, single_order_user_id
 
 
 class Users(Resource):
@@ -186,9 +181,7 @@ class OrderItems(Resource):
             return jsonify({'message': 'No orders found!'})
         order_list = []
         for order in orders:
-            cur.execute('SELECT * FROM users WHERE id = (%s);',
-                        [order[3]])
-            user = cur.fetchone()
+            user = single_user_id([order[3]])
             orders_dict = {}
             orders_dict['id'] = order[0]
             orders_dict['name'] = order[1]
@@ -205,25 +198,18 @@ class OrderItems(Resource):
         request_data = request.get_json(force=True)
         if request_data["name"] == "" or request_data["price"] == "":
             return jsonify({'message': 'Name field must be filled.'})
-        cur.execute('SELECT * FROM food_items WHERE name = (%s);',
-                    (request_data['name'],))
-        confirm_order = cur.fetchone()
+        confirm_order = single_menu_name(request_data['name'])
         if not confirm_order:
             response = jsonify({'message': 'Food item not in our menu!'})
             response.status_code = 400
             return response
-
-        cur.execute('SELECT * FROM orders WHERE name = (%s) AND user_id = (%s);',
-                    (request_data['name'], active_user['id']))
-        order = cur.fetchone()
+        order = single_order_user_id(request_data['name'], active_user['id'])
         if order:
             response = jsonify(
                 {'message': 'Similar order has already been made!'})
             response.status_code = 400
             return response
-        cur.execute("INSERT INTO orders (name, user_id) VALUES (%s, %s)",
-                    (request_data["name"], active_user['id']))
-        conn.commit()
+        post_order_item(request_data["name"], active_user['id'])
         response = jsonify({'Orders': 'Order created successfully'})
         response.status_code = 201
         return response
@@ -235,15 +221,12 @@ class OrderItem(Resource):
     @token
     def get(self, active_user, order_id):
         '''returns one order'''
-
-        cur.execute('SELECT * FROM orders WHERE user_id = (%s);', (order_id,))
-        orders = cur.fetchall()
+        orders = check_user_orders(order_id)
         if not orders:
             return jsonify({"message": "No orders found for that user"})
         order_list = []
         for order in orders:
-            cur.execute('SELECT * FROM users WHERE id = (%s);', [order[3]])
-            user = cur.fetchone()
+            user = single_user_id(order[3])
             order_details = {}
             order_details['id'] = order[0]
             order_details['name'] = order[1]
@@ -262,13 +245,10 @@ class OrderItem(Resource):
         request_data = request.get_json(force=True)
         if request_data["name"] == "" or request_data["price"] == "":
             return jsonify({'message': 'Name field must be filled.'})
-        cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
-        order = cur.fetchone()
+        order = single_order_id(order_id)
         if not order:
             return jsonify({'message': 'No order found with that id'})
-        cur.execute('UPDATE orders SET status = (%s) WHERE id = (%s);',
-                    (request_data['status'], order_id))
-        conn.commit()
+        update_order(request_data['status'], order_id)
         response = jsonify({'Order': 'Order Status updated successfully'})
         response.status_code = 201
         return response
@@ -276,16 +256,13 @@ class OrderItem(Resource):
     @token
     def delete(self, active_user, order_id):
         """deletes an oder"""
-        cur.execute('SELECT * FROM orders WHERE id = (%s);', (order_id,))
-        order = cur.fetchone()
+        order = single_order_id(order_id)
         if not order:
             return jsonify({'message': 'No order found with that id'})
-        cur.execute('SELECT * FROM users WHERE id = (%s);', (order[3],))
-        user = cur.fetchone()
+        user = single_user_id(order[3])
         if not user:
             return jsonify({'message': 'Permission denied! This is not your order item'})
-        cur.execute('DELETE FROM orders WHERE id = (%s);', (order_id,))
-        conn.commit()
+        delete_order(order_id)
         response = jsonify({'message': 'Order deleted successfully'})
         response.status_code = 200
         return response
