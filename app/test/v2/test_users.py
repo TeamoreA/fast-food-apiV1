@@ -12,7 +12,7 @@ class TestApi(unittest.TestCase):
     def setUp(self):
         """Define test variables and initialize app."""
 
-        self.app = create_app("testing").test_client()
+        self.app = create_app(config_name="testing").test_client()
         self.sample_user = {
             "name": "Admin",
             "password": "password"

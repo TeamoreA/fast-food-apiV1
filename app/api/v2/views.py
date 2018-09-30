@@ -1,12 +1,16 @@
 """Order api endpoits"""
 import datetime
 import os
-from flask import jsonify, request, json
+from flask import jsonify, request
 from flask_restful import Resource
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import psycopg2
 from .models import token
+from .datamodels import get_all_users, single_user_name,\
+    post_users, single_user_id, promote_user, update_user,\
+    delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
+    get_all_orders
 
 
 conn = psycopg2.connect(
@@ -19,8 +23,7 @@ class Users(Resource):
     @token
     def get(self, active_user):
         '''return all users'''
-        cur.execute('SELECT * FROM users;')
-        users = cur.fetchall()
+        users = get_all_users()
         if not users:
             return jsonify({"message": "No user has been created yet"})
         users_list = []
@@ -38,18 +41,14 @@ class Users(Resource):
     def post(self):
         """method to get all users"""
         request_data = request.get_json(force=True)
-        if not request.json:
+        if not request.json():
             return jsonify({'message': 'check the input fields and try again'})
-        cur.execute('SELECT * FROM users WHERE name = (%s);',
-                    (request_data['name'],))
-        user = cur.fetchone()
+        user = single_user_name(request_data['name'])
         if user:
             return jsonify({'message': 'User already exists'})
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
-        cur.execute("INSERT INTO users (name, password) VALUES (%s, %s)",
-                    (request_data["name"], hashed_pw))
-        conn.commit()
+        post_users(request_data["name"], hashed_pw)
         response = jsonify(
             {'Message': 'New user has been created successfully'})
         response.status_code = 201
@@ -61,17 +60,10 @@ class PromoteUser(Resource):
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
-        # request_data = request.get_json(force=True)
-        cur.execute('SELECT * FROM users WHERE id = (%s);', (1,))
-        user = cur.fetchone()
+        user = single_user_id(1)
         if not user:
             return jsonify({'message': 'Sorry you can not perform this function'})
-
-        # hashed_pw = generate_password_hash(
-        #     request_data['password'], method='sha256')
-        cur.execute('UPDATE users SET admin = (%s) WHERE id = (%s);',
-                    (True, user_id))
-        conn.commit()
+        promote_user(user_id)
         response = jsonify({"message": "User is an admin now"})
         response.status_code = 201
         return response
@@ -83,16 +75,16 @@ class User(Resource):
     def put(self, active_user, user_id):
         """Updates users password"""
         request_data = request.get_json(force=True)
-        cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
-        user = cur.fetchone()
+        user = single_user_id(user_id)
         if not user:
             return jsonify({'message': 'No user found with that id'})
 
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
-        cur.execute('UPDATE users SET name = (%s), password = (%s) WHERE id = (%s);',
-                    (request_data['name'], hashed_pw, user_id))
-        conn.commit()
+        # cur.execute('UPDATE users SET name = (%s), password = (%s) WHERE id = (%s);',
+        #             (request_data['name'], hashed_pw, user_id))
+        # conn.commit()
+        update_user(request_data['name'], hashed_pw, user_id)
         response = jsonify({"message": "User details edited successfully"})
         response.status_code = 201
         return response
@@ -100,8 +92,7 @@ class User(Resource):
     @token
     def get(self, active_user, user_id):
         '''returns one user'''
-        cur.execute('SELECT * FROM users WHERE id = (%s);', (user_id,))
-        user = cur.fetchone()
+        user = single_user_id(user_id)
         if not user:
             return jsonify({"message": "No user was found with that id"})
         user_details = {}
@@ -116,12 +107,10 @@ class User(Resource):
     @token
     def delete(self, active_user, user_id):
         """deletes a user"""
-        cur.execute('SELECT * FROM users WHERE name = (%s);', (user_id,))
-        user = cur.fetchone()
+        user = single_user_name(user_id)
         if not user:
             return jsonify({'message': 'No user found with that name, The name is case sensitive'})
-        cur.execute('DELETE FROM users WHERE name = (%s);', (user_id,))
-        conn.commit()
+        delete_user(user_id)
         response = jsonify({'message': 'User deleted successfully'})
         response.status_code = 200
         return response
@@ -137,8 +126,7 @@ class Login(Resource):
             response = jsonify({'message', 'Login is required!'})
             response.status_code = 401
             return response
-        cur.execute('SELECT * FROM users WHERE name = (%s);', (auth.username,))
-        user = cur.fetchone()
+        user = single_user_name(auth.username)
         if not user:
             response = jsonify({'message', 'User not found!'})
             response.status_code = 401
@@ -157,18 +145,17 @@ class MenuItems(Resource):
 
     def get(self):
         """returns all orders"""
-        cur.execute('SELECT * FROM food_items;')
-        orders = cur.fetchall()
-        if not orders:
+        menu_items = get_all_menuitems()
+        if not menu_items:
             return jsonify({'message': 'No food items found!'})
-        order_list = []
-        for order in orders:
+        menu_list = []
+        for menu_item in menu_items:
             orders_dict = {}
-            orders_dict['id'] = order[0]
-            orders_dict['name'] = order[1]
-            orders_dict['price'] = "$" + str(order[2])
-            order_list.append(orders_dict)
-        response = jsonify({'Orders': order_list})
+            orders_dict['id'] = menu_item[0]
+            orders_dict['name'] = menu_item[1]
+            orders_dict['price'] = "$" + str(menu_item[2])
+            menu_list.append(orders_dict)
+        response = jsonify({'Menu List': menu_list})
         response.status_code = 200
         return response
 
@@ -178,14 +165,10 @@ class MenuItems(Resource):
         if not active_user['admin']:
             return jsonify({'message': 'Can not perfom this action!'})
         request_data = request.get_json(force=True)
-        cur.execute('SELECT * FROM food_items WHERE name = (%s);',
-                    (request_data['name'],))
-        order = cur.fetchone()
-        if order:
+        food_item = single_menu_name(request_data["name"])
+        if food_item:
             return jsonify({'message': 'Menu item already exists'})
-        cur.execute("INSERT INTO food_items (name, price) VALUES (%s, %s)",
-                    (request_data["name"], request_data["price"]))
-        conn.commit()
+        post_menu_items(request_data["name"], request_data["price"])
         response = jsonify({'Orders': 'Food item created successfully'})
         response.status_code = 201
         return response
@@ -198,8 +181,7 @@ class OrderItems(Resource):
         """returns all orders"""
         if not active_user['admin']:
             return jsonify({"message": "Cannot perform this action"})
-        cur.execute('SELECT * FROM orders;')
-        orders = cur.fetchall()
+        orders = get_all_orders()
         if not orders:
             return jsonify({'message': 'No orders found!'})
         order_list = []
