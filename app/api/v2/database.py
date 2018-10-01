@@ -13,6 +13,7 @@ class Models():
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 admin BOOLEAN DEFAULT FALSE
             )
@@ -20,7 +21,8 @@ class Models():
             """ CREATE TABLE IF NOT EXISTS food_items (
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
-                    price INTEGER NOT NULL
+                    price INTEGER NOT NULL,
+                    description VARCHAR(255) 
                     )
             """,
             """

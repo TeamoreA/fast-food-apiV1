@@ -7,10 +7,10 @@ conn = psycopg2.connect(
 cur = conn.cursor()
 
 
-def post_users(username, psw):
+def post_users(username, useremail, psw):
     """Creates a new user"""
-    cur.execute("INSERT INTO users (name, password) VALUES (%s, %s)",
-                (username, psw))
+    cur.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
+                (username, useremail, psw))
     conn.commit()
 
 
@@ -19,6 +19,14 @@ def get_all_users():
     cur.execute('SELECT * FROM users;')
     users = cur.fetchall()
     return users
+
+
+def single_user_email(useremail):
+    """Gets a user with a specific email"""
+    cur.execute('SELECT * FROM users WHERE email = (%s);',
+                (useremail,))
+    user = cur.fetchone()
+    return user
 
 
 def single_user_name(username):
@@ -44,10 +52,10 @@ def promote_user(userid):
     conn.commit()
 
 
-def update_user(name, hashed_pw, user_id):
+def update_user(name, hashed_pw, email, user_id):
     """Updates the user details"""
-    cur.execute('UPDATE users SET name = (%s), password = (%s) WHERE id = (%s);',
-                (name, hashed_pw, user_id))
+    cur.execute('UPDATE users SET name = (%s), password = (%s), email = (%s) WHERE id = (%s);',
+                (name, hashed_pw, email, user_id))
     conn.commit()
 
 
@@ -57,10 +65,10 @@ def delete_user(userid):
     conn.commit()
 
 
-def post_menu_items(name, price):
+def post_menu_items(name, price, description):
     """Creates a new user"""
-    cur.execute("INSERT INTO food_items (name, price) VALUES (%s, %s)",
-                (name, price))
+    cur.execute("INSERT INTO food_items (name, price, description) VALUES (%s, %s, %s)",
+                (name, price, description))
     conn.commit()
 
 

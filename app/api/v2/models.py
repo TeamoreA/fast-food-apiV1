@@ -4,6 +4,7 @@ from functools import wraps
 from flask import jsonify, request
 import jwt
 import psycopg2
+from .datamodels import single_user_id
 
 
 # conn = psycopg2.connect(os.getenv('DATABASE_URL'))
@@ -29,11 +30,11 @@ def token(f):
 
         try:
             data = jwt.decode(token, os.getenv('SECRET'))
-            cur.execute('SELECT * FROM users WHERE id = (%s);', (data['id'],))
-            user = cur.fetchone()
+            user = single_user_id(data['id'])
             active_user = {}
             active_user['id'] = user[0]
             active_user['name'] = user[1]
+            active_user['email'] = user[2]
             active_user['password'] = user[2]
             active_user['admin'] = user[3]
 

@@ -1,12 +1,12 @@
 """Order api endpoits"""
 import datetime
 import os
-from flask import jsonify, request
+from flask import jsonify, request, json
 from flask_restful import Resource
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from .models import token
-from .datamodels import get_all_users, single_user_name,\
+from .datamodels import get_all_users, single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
@@ -26,8 +26,9 @@ class Users(Resource):
             user_details = {}
             user_details['id'] = user[0]
             user_details['name'] = user[1]
-            user_details['password'] = user[2]
-            user_details['admin'] = user[3]
+            user_details['email'] = user[2]
+            user_details['password'] = user[3]
+            user_details['admin'] = user[4]
             users_list.append(user_details)
         response = jsonify({"Users": users_list})
         response.status_code = 200
@@ -36,14 +37,19 @@ class Users(Resource):
     def post(self):
         """method to get all users"""
         request_data = request.get_json(force=True)
-        if not request.json():
-            return jsonify({'message': 'check the input fields and try again'})
-        user = single_user_name(request_data['name'])
+        if not request_data and request_data['name'] == ''and request_data['email'] == '':
+            return jsonify({'message': 'No empty fields allowed!'})
+        user = single_user_email(request_data['email'])
         if user:
             return jsonify({'message': 'User already exists'})
+        chars = ['.', '@']
+        email = request_data['email']
+        for i in range(len(email)):
+            if email[i].isalpha and email[i] in chars:
+                checked_mail = email
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
-        post_users(request_data["name"], hashed_pw)
+        post_users(request_data["name"], checked_mail, hashed_pw)
         response = jsonify(
             {'Message': 'New user has been created successfully'})
         response.status_code = 201
@@ -76,10 +82,8 @@ class User(Resource):
 
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
-        # cur.execute('UPDATE users SET name = (%s), password = (%s) WHERE id = (%s);',
-        #             (request_data['name'], hashed_pw, user_id))
-        # conn.commit()
-        update_user(request_data['name'], hashed_pw, user_id)
+        update_user(request_data['name'], request_data[
+            'email'], hashed_pw, user_id)
         response = jsonify({"message": "User details edited successfully"})
         response.status_code = 201
         return response
@@ -93,8 +97,9 @@ class User(Resource):
         user_details = {}
         user_details['id'] = user[0]
         user_details['name'] = user[1]
-        user_details['password'] = user[2]
-        user_details['admin'] = user[3]
+        user_details['email'] = user[2]
+        user_details['password'] = user[3]
+        user_details['admin'] = user[4]
         response = jsonify({'User': user_details})
         response.status_code = 200
         return response
@@ -118,21 +123,21 @@ class Login(Resource):
         """login route"""
         auth = request.authorization
         if not auth or not auth.username or not auth.password:
-            response = jsonify({'message', 'Login is required!'})
+            response = jsonify({'message': 'Login is required!'})
             response.status_code = 401
             return response
         user = single_user_name(auth.username)
         if not user:
-            response = jsonify({'message', 'User not found!'})
+            response = jsonify({'message': 'User not found!'})
             response.status_code = 401
             return response
-        if check_password_hash(user[2], auth.password):
+        if check_password_hash(user[3], auth.password):
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=45)}, os.getenv('SECRET'))
             return jsonify({'token': token.decode('UTF-8')})
-        response = jsonify({'message', 'Login required!'})
+        response = jsonify({'message': 'Login required!'})
         response.status_code = 401
-        # return response
+        return response
 
 
 class MenuItems(Resource):
@@ -149,6 +154,7 @@ class MenuItems(Resource):
             orders_dict['id'] = menu_item[0]
             orders_dict['name'] = menu_item[1]
             orders_dict['price'] = "$" + str(menu_item[2])
+            orders_dict['description'] = menu_item[3]
             menu_list.append(orders_dict)
         response = jsonify({'Menu List': menu_list})
         response.status_code = 200
@@ -163,7 +169,8 @@ class MenuItems(Resource):
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
-        post_menu_items(request_data["name"], request_data["price"])
+        post_menu_items(request_data["name"], request_data[
+            "price"], request_data["description"])
         response = jsonify({'Orders': 'Food item created successfully'})
         response.status_code = 201
         return response
