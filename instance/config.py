@@ -2,12 +2,12 @@
 import os
 
 
-class Config():
+class Config(object):
     """basic cofig class"""
     DEBUG = False
     CSRF_ENABLED = True
     SECRET_KEY = os.getenv('SECRET')
-    DATABASE_URI = os.getenv('DATABASE_URL')
+    DATABASE_URL = os.getenv('DATABASE_URL')
 
 
 class DevelopmentConfig(Config):
@@ -18,7 +18,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """When its under testing mode"""
     TESTING = True
-    DATABASE_URI = "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''"
+    DATABASE_URL = "dbname='fooddb' host='127.0.0.1' port='5432' user='postgres' password=''"
     DEBUG = True
 
 app_config = {

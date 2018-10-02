@@ -3,14 +3,14 @@ import os
 import re
 from functools import wraps
 from flask import jsonify, request
+from instance.config import Config
 import jwt
 import psycopg2
 from .datamodels import single_user_id
 
 
 # conn = psycopg2.connect(os.getenv('DATABASE_URL'))
-conn = psycopg2.connect(
-    "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
+conn = psycopg2.connect(Config.DATABASE_URL)
 cur = conn.cursor()
 
 
@@ -52,18 +52,15 @@ class Validators:
 
     def validate_name(self, name):
         """Validates the name"""
-        if re.match(r"^aAzZ_ $", name):
-            return name
-        else:
-            resp = jsonify({'message': 'Invalid name!'})
-            resp.status_code = 404
-            return resp
+        regex = "^[a-zA-Z_ ]+$"
+        return re.match(regex, name)
 
     def valid_email(self, email):
         """validates the user email"""
-        if len(email) > 7:
-            if re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
-                return email
-        resp = jsonify({'message': 'Invalid email!'})
-        resp.status_code = 404
-        return resp
+        regex = "^[^@]+@[^@]+\.[^@]+$"
+        return re.match(regex, email)
+
+    # def validate_price(self, price):
+    #     """validates the user address"""
+    #     regex = "^[\d+\.\d{1,2}]+$"
+    #     return re.match(regex, email)

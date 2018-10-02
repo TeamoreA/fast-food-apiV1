@@ -2,6 +2,7 @@
 import datetime
 import os
 from flask import jsonify, request, json
+from instance.config import Config
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -46,9 +47,9 @@ class Users(Resource):
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid user name!'})
-        # if not Validators().valid_email(request_data['email']):
-        #     return jsonify({'message': 'Invalid user email!'})
-        user = single_user_email(request_data['email'])
+        if not Validators().valid_email(request_data['email']):
+            return jsonify({'message': 'Invalid user email!'})
+        user = single_user_name(request_data['name'])
         if user:
             return jsonify({'message': 'User already exists'})
         hashed_pw = generate_password_hash(
@@ -135,19 +136,23 @@ class Login(Resource):
 
     def post(self):
         """login route"""
-        auth = request.authorization
-        if not auth or not auth.username or not auth.password:
-            response = jsonify({'message': 'Login is required!'})
-            response.status_code = 401
-            return response
-        user = single_user_name(auth.username)
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('password', type=str, required=True,
+                            help="Password field is required")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return {'message': 'Please enter a valid name'}, 400
+        user = single_user_name(request_data['name'])
         if not user:
             response = jsonify({'message': 'User not found!'})
             response.status_code = 401
             return response
-        if check_password_hash(user[3], auth.password):
+        if check_password_hash(user[3], request_data['password']):
+            print(Config.SECRET_KEY)
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
-            ) + datetime.timedelta(minutes=45)}, os.getenv('SECRET'))
+            ) + datetime.timedelta(minutes=45)}, Config.SECRET_KEY)
             return jsonify({'token': token.decode('UTF-8')})
         response = jsonify({'message': 'Login required!'})
         response.status_code = 401
@@ -189,6 +194,8 @@ class MenuItems(Resource):
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_name(request_data['description']):
+            return jsonify({'message': 'Invalid Description!'})
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
@@ -235,6 +242,9 @@ class OrderItems(Resource):
         confirm_order = single_menu_name(request_data['name'])
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
+
+        if not Validators().validate_name(request_data['address']):
+            return jsonify({'message': 'Invalid address!'})
         if not confirm_order:
             response = jsonify({'message': 'Food item not in our menu!'})
             response.status_code = 400
@@ -286,7 +296,7 @@ class OrderItem(Resource):
         parser.add_argument('address', type=str, required=True,
                             help="Address field is required")
         request_data = parser.parse_args()
-        if not Validators().validate_name(request_data['name']):
+        if not Validators().validate_name(request_data['status']):
             return jsonify({'message': 'Invalid name!'})
         order = single_order_id(order_id)
         if not order:
