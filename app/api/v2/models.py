@@ -1,5 +1,6 @@
 """Models and tokens"""
 import os
+import re
 from functools import wraps
 from flask import jsonify, request
 import jwt
@@ -44,3 +45,25 @@ def token(f):
             return response
         return f(*args, active_user, **kwargs)
     return wrapped_func
+
+
+class Validators:
+    """docstring for Validators"""
+
+    def validate_name(self, name):
+        """Validates the name"""
+        if re.match(r"^aAzZ_ $", name):
+            return name
+        else:
+            resp = jsonify({'message': 'Invalid name!'})
+            resp.status_code = 404
+            return resp
+
+    def valid_email(self, email):
+        """validates the user email"""
+        if len(email) > 7:
+            if re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+                return email
+        resp = jsonify({'message': 'Invalid email!'})
+        resp.status_code = 404
+        return resp

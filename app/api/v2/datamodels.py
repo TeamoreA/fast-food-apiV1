@@ -94,10 +94,10 @@ def get_all_orders():
     return orders
 
 
-def post_order_item(name, user_id):
+def post_order_item(name, address, user_id):
     """creates a new order"""
-    cur.execute("INSERT INTO orders (name, user_id) VALUES (%s, %s)",
-                (name, user_id))
+    cur.execute("INSERT INTO orders (name,address, user_id) VALUES (%s,%s, %s)",
+                (name, address, user_id))
     conn.commit()
 
 

@@ -29,6 +29,7 @@ class Models():
             CREATE TABLE IF NOT EXISTS orders (
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
+                    address VARCHAR(255) NOT NULL,
                     status VARCHAR(100) DEFAULT 'New',
                     user_id INTEGER NOT NULL
             )

@@ -2,10 +2,10 @@
 import datetime
 import os
 from flask import jsonify, request, json
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-from .models import token
+from .models import token, Validators
 from .datamodels import get_all_users, single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
@@ -36,20 +36,24 @@ class Users(Resource):
 
     def post(self):
         """method to get all users"""
-        request_data = request.get_json(force=True)
-        if not request_data and request_data['name'] == ''and request_data['email'] == '':
-            return jsonify({'message': 'No empty fields allowed!'})
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('email', type=str, required=True,
+                            help="Email field is required")
+        parser.add_argument('password', type=str, required=True,
+                            help="Password field is required")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid user name!'})
+        # if not Validators().valid_email(request_data['email']):
+        #     return jsonify({'message': 'Invalid user email!'})
         user = single_user_email(request_data['email'])
         if user:
             return jsonify({'message': 'User already exists'})
-        chars = ['.', '@']
-        email = request_data['email']
-        for i in range(len(email)):
-            if email[i].isalpha and email[i] in chars:
-                checked_mail = email
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
-        post_users(request_data["name"], checked_mail, hashed_pw)
+        post_users(request_data["name"], request_data['email'], hashed_pw)
         response = jsonify(
             {'Message': 'New user has been created successfully'})
         response.status_code = 201
@@ -75,11 +79,21 @@ class User(Resource):
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
-        request_data = request.get_json(force=True)
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('email', type=str, required=True,
+                            help="Email field is required")
+        parser.add_argument('password', type=str, required=True,
+                            help="Password field is required")
+        request_data = parser.parse_args()
         user = single_user_id(user_id)
         if not user:
             return jsonify({'message': 'No user found with that id'})
-
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid user name!'})
+        if not Validators().valid_email(request_data['email']):
+            return jsonify({'message': 'Invalid user email!'})
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
         update_user(request_data['name'], request_data[
@@ -165,7 +179,16 @@ class MenuItems(Resource):
         """adds a new order"""
         if not active_user['admin']:
             return jsonify({'message': 'Can not perfom this action!'})
-        request_data = request.get_json(force=True)
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('price', type=float, required=True,
+                            help="Price field is required")
+        parser.add_argument('description', type=str, required=True,
+                            help="Description field is required")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
@@ -188,11 +211,12 @@ class OrderItems(Resource):
             return jsonify({'message': 'No orders found!'})
         order_list = []
         for order in orders:
-            user = single_user_id([order[3]])
+            user = single_user_id([order[4]])
             orders_dict = {}
             orders_dict['id'] = order[0]
             orders_dict['name'] = order[1]
-            orders_dict['status'] = order[2]
+            orders_dict['address'] = order[2]
+            orders_dict['status'] = order[3]
             orders_dict['ordered_by'] = user[1]
             order_list.append(orders_dict)
         response = jsonify({'Orders': order_list})
@@ -202,10 +226,15 @@ class OrderItems(Resource):
     @token
     def post(self, active_user):
         """adds a new order"""
-        request_data = request.get_json(force=True)
-        if request_data["name"] == "" or request_data["price"] == "":
-            return jsonify({'message': 'Name field must be filled.'})
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('address', type=str, required=True,
+                            help="Address field is required")
+        request_data = parser.parse_args()
         confirm_order = single_menu_name(request_data['name'])
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
         if not confirm_order:
             response = jsonify({'message': 'Food item not in our menu!'})
             response.status_code = 400
@@ -216,7 +245,8 @@ class OrderItems(Resource):
                 {'message': 'Similar order has already been made!'})
             response.status_code = 400
             return response
-        post_order_item(request_data["name"], active_user['id'])
+        post_order_item(request_data["name"], request_data[
+            'address'], active_user['id'])
         response = jsonify({'Orders': 'Order created successfully'})
         response.status_code = 201
         return response
@@ -237,7 +267,8 @@ class OrderItem(Resource):
             order_details = {}
             order_details['id'] = order[0]
             order_details['name'] = order[1]
-            order_details['status'] = order[2]
+            order_details['address'] = order[2]
+            order_details['status'] = order[3]
             order_details['ordered_by'] = user[1]
             order_list.append(order_details)
         response = jsonify({'orders': order_list})
@@ -249,9 +280,14 @@ class OrderItem(Resource):
         """updates an order"""
         if not active_user['admin']:
             return jsonify({"message": "Cannot perform this action"})
-        request_data = request.get_json(force=True)
-        if request_data["name"] == "" or request_data["price"] == "":
-            return jsonify({'message': 'Name field must be filled.'})
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('address', type=str, required=True,
+                            help="Address field is required")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
         order = single_order_id(order_id)
         if not order:
             return jsonify({'message': 'No order found with that id'})

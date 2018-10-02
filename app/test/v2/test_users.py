@@ -11,12 +11,28 @@ class TestApi(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-
         self.app = create_app(config_name="testing").test_client()
         self.sample_user = {
             "name": "Admin",
+            "email": "admin@app.com",
             "password": "password"
         }
+        self.sample_login = {
+            "name": "Admin",
+            "password": "password"
+        }
+        testresp = self.app.post(
+            '/api/v2/users',
+            data=json.dumps(self.sample_user),
+            headers={'content-type': 'application/json'}
+        )
+        test_resp = self.app.post(
+            '/api/v2/login',
+            data=json.dumps(self.sample_login),
+            headers={'content-type': 'application/json'}
+        )
+        resp = json.loads(test_resp.data.decode('utf-8'))
+        return str(resp.token)
 
     def test_to_register_a_new_user(self):
         """ The test should return status code 200 for success (POST request)"""
