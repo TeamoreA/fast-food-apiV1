@@ -60,6 +60,10 @@ class Validators:
         regex = "^[^@]+@[^@]+\.[^@]+$"
         return re.match(regex, email)
 
+    def validate_status(self, status):
+        if status == "New" or status == "Processing" or status == "Complete":
+            return status
+
     # def validate_price(self, price):
     #     """validates the user address"""
     #     regex = "^[\d+\.\d{1,2}]+$"

@@ -12,6 +12,10 @@ from .datamodels import get_all_users, single_user_email, single_user_name,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
     single_order_id, update_order, single_order_user_id
+import psycopg2
+from instance.config import Config
+
+conn = psycopg2.connect(Config.DATABASE_URL)
 
 
 class Users(Resource):
@@ -44,7 +48,11 @@ class Users(Resource):
                             help="Email field is required")
         parser.add_argument('password', type=str, required=True,
                             help="Password field is required")
+        parser.add_argument('confirm_password', type=str, required=True,
+                            help="Confirm_password field is required")
         request_data = parser.parse_args()
+        if request_data['password'] != request_data['confirm_password']:
+            return jsonify({'message': 'your passwords are inconsistent!'})
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid user name!'})
         if not Validators().valid_email(request_data['email']):
@@ -150,7 +158,6 @@ class Login(Resource):
             response.status_code = 401
             return response
         if check_password_hash(user[3], request_data['password']):
-            print(Config.SECRET_KEY)
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=45)}, Config.SECRET_KEY)
             return jsonify({'token': token.decode('UTF-8')})
@@ -183,7 +190,7 @@ class MenuItems(Resource):
     def post(self, active_user):
         """adds a new order"""
         if not active_user['admin']:
-            return jsonify({'message': 'Can not perfom this action!'})
+            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True,
                             help="name field is required")
@@ -201,7 +208,7 @@ class MenuItems(Resource):
             return jsonify({'message': 'Menu item already exists'})
         post_menu_items(request_data["name"], request_data[
             "price"], request_data["description"])
-        response = jsonify({'Orders': 'Food item created successfully'})
+        response = jsonify({'Menu': 'Food item created successfully'})
         response.status_code = 201
         return response
 
@@ -212,7 +219,7 @@ class OrderItems(Resource):
     def get(self, active_user):
         """returns all orders"""
         if not active_user['admin']:
-            return jsonify({"message": "Cannot perform this action"})
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
         orders = get_all_orders()
         if not orders:
             return jsonify({'message': 'No orders found!'})
@@ -289,15 +296,13 @@ class OrderItem(Resource):
     def put(self, active_user, order_id):
         """updates an order"""
         if not active_user['admin']:
-            return jsonify({"message": "Cannot perform this action"})
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
         parser = reqparse.RequestParser()
-        parser.add_argument('name', type=str, required=True,
-                            help="name field is required")
-        parser.add_argument('address', type=str, required=True,
-                            help="Address field is required")
+        parser.add_argument('status', type=str, required=True,
+                            help="Status field is required")
         request_data = parser.parse_args()
-        if not Validators().validate_name(request_data['status']):
-            return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_status(request_data['status']):
+            return jsonify({'message': 'Invalid Status!'})
         order = single_order_id(order_id)
         if not order:
             return jsonify({'message': 'No order found with that id'})
@@ -315,7 +320,10 @@ class OrderItem(Resource):
         user = single_user_id(order[3])
         if not user:
             return jsonify({'message': 'Permission denied! This is not your order item'})
+        if order[3] != 'Complete':
+            response = jsonify({'message': 'Order should be completed first!'})
         delete_order(order_id)
+        conn.close()
         response = jsonify({'message': 'Order deleted successfully'})
         response.status_code = 200
         return response

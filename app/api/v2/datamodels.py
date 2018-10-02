@@ -1,9 +1,11 @@
 """Database models"""
 import psycopg2
+# local imports
+from instance.config import Config
 
-
-conn = psycopg2.connect(
-    "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
+# conn = psycopg2.connect(
+#     "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
+conn = psycopg2.connect(Config.DATABASE_URL)
 cur = conn.cursor()
 
 
