@@ -1,5 +1,5 @@
 """ initialise the app"""
-import os
+from os import getenv
 from flask import Flask
 from flask_restful import Resource, Api
 from instance.config import app_config
@@ -10,11 +10,11 @@ from app.api.v2.database import Models
 
 def create_app(config_name):
     """creation of my app """
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
     api = Api(app)
-    app.config['SECRET_KEY'] = os.getenv('SECRET')
+    # app.config['SECRET_KEY'] = getenv('SECRET')
     app.config.from_object(app_config[config_name])
-    app.config.from_pyfile('config.py')
+    # app.config.from_pyfile('config.py')
     with app.app_context():
         Models().init_db()
 

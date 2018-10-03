@@ -1,11 +1,11 @@
 """Database models"""
 import psycopg2
 # local imports
+from flask import current_app
 from instance.config import Config
 
-# conn = psycopg2.connect(
-#     "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
 conn = psycopg2.connect(Config.DATABASE_URL)
+# conn = psycopg2.connect(current_app.config['DATABASE_URL'])
 cur = conn.cursor()
 
 
@@ -14,13 +14,6 @@ def post_users(username, useremail, psw):
     cur.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
                 (username, useremail, psw))
     conn.commit()
-
-
-def get_all_users():
-    """Function gets all users"""
-    cur.execute('SELECT * FROM users;')
-    users = cur.fetchall()
-    return users
 
 
 def single_user_email(useremail):
@@ -61,12 +54,6 @@ def update_user(name, hashed_pw, email, user_id):
     conn.commit()
 
 
-def delete_user(userid):
-    """Deletes a single user"""
-    cur.execute('DELETE FROM users WHERE name = (%s);', (userid,))
-    conn.commit()
-
-
 def post_menu_items(name, price, description):
     """Creates a new user"""
     cur.execute("INSERT INTO food_items (name, price, description) VALUES (%s, %s, %s)",
@@ -96,10 +83,10 @@ def get_all_orders():
     return orders
 
 
-def post_order_item(name, address, user_id):
+def post_order_item(name, address, quantity, user_id):
     """creates a new order"""
-    cur.execute("INSERT INTO orders (name,address, user_id) VALUES (%s,%s, %s)",
-                (name, address, user_id))
+    cur.execute("INSERT INTO orders (name,address, quantity, user_id) VALUES (%s,%s,%s, %s)",
+                (name, address, quantity, user_id))
     conn.commit()
 
 

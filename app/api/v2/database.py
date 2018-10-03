@@ -1,6 +1,7 @@
 """my models to create tables"""
-import os
+from flask import current_app
 import psycopg2
+from instance.config import Config
 
 
 class Models():
@@ -30,21 +31,42 @@ class Models():
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
                     address VARCHAR(255) NOT NULL,
+                    quantity INTEGER NOT NULL,
                     status VARCHAR(100) DEFAULT 'New',
                     user_id INTEGER NOT NULL
             )
             """)
         conn = None
         try:
-            conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            # conn = psycopg2.connect(current_app.config.get('DATABASE_URL'))
+            conn = psycopg2.connect(Config.DATABASE_URL)
             cur = conn.cursor()
             for query in queries:
                 cur.execute(query)
             cur.close()
             conn.commit()
+            # print("tables created")
         except (Exception, psycopg2.DatabaseError) as error:
             response = {"Error": error}
-            print(error)
+            return error
+        finally:
+            if conn is not None:
+                conn.close()
+
+    def drop_tables(self):
+        '''droping databases for the tests'''
+        query = ("""DROP TABLE users, food_items,orders""")
+        conn = None
+        try:
+            conn = psycopg2.connect(Config.DATABASE_URL)
+            # conn = psycopg2.connect(current_app.config.get('DATABASE_URL'))
+            cur = conn.cursor()
+            cur.execute(query)
+            cur.close()
+            conn.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            response = {"Error": error}
+            return error
         finally:
             if conn is not None:
                 conn.close()

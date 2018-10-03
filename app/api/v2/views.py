@@ -1,46 +1,28 @@
-"""Order api endpoits"""
+"""Order api endpoits for v2 with the database"""
 import datetime
-import os
-from flask import jsonify, request, json
-from instance.config import Config
+from flask import jsonify
 from flask_restful import Resource, reqparse
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-from .models import token, Validators
-from .datamodels import get_all_users, single_user_email, single_user_name,\
-    post_users, single_user_id, promote_user, update_user,\
-    delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
-    get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order, single_order_user_id
 import psycopg2
 from instance.config import Config
+from .models import token, Validators
+from .datamodels import  single_user_name,\
+    post_users, single_user_id, promote_user, update_user,\
+    post_menu_items, single_menu_name, get_all_menuitems,\
+    get_all_orders, post_order_item, check_user_orders, delete_order,\
+    single_order_id, update_order, single_order_user_id
+
 
 conn = psycopg2.connect(Config.DATABASE_URL)
+cur = conn.cursor()
 
 
 class Users(Resource):
-
-    @token
-    def get(self, active_user):
-        '''return all users'''
-        users = get_all_users()
-        if not users:
-            return jsonify({"message": "No user has been created yet"})
-        users_list = []
-        for user in users:
-            user_details = {}
-            user_details['id'] = user[0]
-            user_details['name'] = user[1]
-            user_details['email'] = user[2]
-            user_details['password'] = user[3]
-            user_details['admin'] = user[4]
-            users_list.append(user_details)
-        response = jsonify({"Users": users_list})
-        response.status_code = 200
-        return response
+    '''Class that creates a new user'''
 
     def post(self):
-        """method to get all users"""
+        """method to register a user"""
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True,
                             help="name field is required")
@@ -70,10 +52,10 @@ class Users(Resource):
 
 
 class PromoteUser(Resource):
-    """docstring for OtherUsers"""
+    """Class to make a user an admin"""
     @token
     def put(self, active_user, user_id):
-        """Updates users password"""
+        """makes the admin fiels to be true"""
         user = single_user_id(1)
         if not user:
             return jsonify({'message': 'Sorry you can not perform this function'})
@@ -84,10 +66,12 @@ class PromoteUser(Resource):
 
 
 class User(Resource):
-    """docstring for OtherUsers"""
+    """class for editing users details"""
     @token
     def put(self, active_user, user_id):
-        """Updates users password"""
+        """Updates users details"""
+        if active_user['id'] != user_id:
+            return jsonify({'message': 'Ensure you are logged in to your account'})
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True,
                             help="name field is required")
@@ -109,33 +93,6 @@ class User(Resource):
             'email'], hashed_pw, user_id)
         response = jsonify({"message": "User details edited successfully"})
         response.status_code = 201
-        return response
-
-    @token
-    def get(self, active_user, user_id):
-        '''returns one user'''
-        user = single_user_id(user_id)
-        if not user:
-            return jsonify({"message": "No user was found with that id"})
-        user_details = {}
-        user_details['id'] = user[0]
-        user_details['name'] = user[1]
-        user_details['email'] = user[2]
-        user_details['password'] = user[3]
-        user_details['admin'] = user[4]
-        response = jsonify({'User': user_details})
-        response.status_code = 200
-        return response
-
-    @token
-    def delete(self, active_user, user_id):
-        """deletes a user"""
-        user = single_user_name(user_id)
-        if not user:
-            return jsonify({'message': 'No user found with that name, The name is case sensitive'})
-        delete_user(user_id)
-        response = jsonify({'message': 'User deleted successfully'})
-        response.status_code = 200
         return response
 
 
@@ -188,7 +145,7 @@ class MenuItems(Resource):
 
     @token
     def post(self, active_user):
-        """adds a new order"""
+        """method adds a new order"""
         if not active_user['admin']:
             return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
         parser = reqparse.RequestParser()
@@ -208,7 +165,17 @@ class MenuItems(Resource):
             return jsonify({'message': 'Menu item already exists'})
         post_menu_items(request_data["name"], request_data[
             "price"], request_data["description"])
-        response = jsonify({'Menu': 'Food item created successfully'})
+        menu_items = get_all_menuitems()
+        menu_list = []
+        for menu_item in menu_items:
+            orders_dict = {}
+            orders_dict['id'] = menu_item[0]
+            orders_dict['name'] = menu_item[1]
+            orders_dict['price'] = "$" + str(menu_item[2])
+            orders_dict['description'] = menu_item[3]
+            menu_list.append(orders_dict)
+        response = jsonify({'Menu': 'Food item created successfully',
+                            'Food Menu': menu_list})
         response.status_code = 201
         return response
 
@@ -225,13 +192,13 @@ class OrderItems(Resource):
             return jsonify({'message': 'No orders found!'})
         order_list = []
         for order in orders:
-            user = single_user_id([order[4]])
+            user = single_user_id([order[5]])
             orders_dict = {}
             orders_dict['id'] = order[0]
             orders_dict['name'] = order[1]
             orders_dict['address'] = order[2]
             orders_dict['status'] = order[3]
-            orders_dict['ordered_by'] = user[1]
+            orders_dict['ordered_by'] = user[0]
             order_list.append(orders_dict)
         response = jsonify({'Orders': order_list})
         response.status_code = 200
@@ -239,23 +206,20 @@ class OrderItems(Resource):
 
     @token
     def post(self, active_user):
-        """adds a new order"""
+        """method that adds a new order"""
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True,
                             help="name field is required")
         parser.add_argument('address', type=str, required=True,
                             help="Address field is required")
+        parser.add_argument('quantity', type=int, required=True,
+                            help="Quantity is required and should be an integer")
         request_data = parser.parse_args()
-        confirm_order = single_menu_name(request_data['name'])
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
 
         if not Validators().validate_name(request_data['address']):
             return jsonify({'message': 'Invalid address!'})
-        if not confirm_order:
-            response = jsonify({'message': 'Food item not in our menu!'})
-            response.status_code = 400
-            return response
         order = single_order_user_id(request_data['name'], active_user['id'])
         if order:
             response = jsonify(
@@ -263,18 +227,18 @@ class OrderItems(Resource):
             response.status_code = 400
             return response
         post_order_item(request_data["name"], request_data[
-            'address'], active_user['id'])
+            'address'], request_data['quantity'], active_user['id'])
         response = jsonify({'Orders': 'Order created successfully'})
         response.status_code = 201
         return response
 
 
 class OrderItem(Resource):
-    """docstring for Others"""
+    """class for specific order item"""
 
     @token
     def get(self, active_user, order_id):
-        '''returns one order'''
+        '''returns a single order item'''
         orders = check_user_orders(order_id)
         if not orders:
             return jsonify({"message": "No orders found for that user"})
@@ -285,16 +249,18 @@ class OrderItem(Resource):
             order_details['id'] = order[0]
             order_details['name'] = order[1]
             order_details['address'] = order[2]
-            order_details['status'] = order[3]
+            order_details['address'] = order[3]
+            order_details['status'] = order[4]
             order_details['ordered_by'] = user[1]
             order_list.append(order_details)
-        response = jsonify({'orders': order_list})
-        response.status_code = 200
+        response = jsonify(
+            {'message': 'This is a list of orders made', 'orders': order_list})
+        response.status_code = 200  # OK
         return response
 
     @token
     def put(self, active_user, order_id):
-        """updates an order"""
+        """Method to update an order"""
         if not active_user['admin']:
             return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
         parser = reqparse.RequestParser()
@@ -308,7 +274,7 @@ class OrderItem(Resource):
             return jsonify({'message': 'No order found with that id'})
         update_order(request_data['status'], order_id)
         response = jsonify({'Order': 'Order Status updated successfully'})
-        response.status_code = 201
+        response.status_code = 201  # created
         return response
 
     @token
@@ -325,5 +291,5 @@ class OrderItem(Resource):
         delete_order(order_id)
         conn.close()
         response = jsonify({'message': 'Order deleted successfully'})
-        response.status_code = 200
+        response.status_code = 200  # OK
         return response

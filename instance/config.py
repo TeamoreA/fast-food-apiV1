@@ -1,13 +1,13 @@
 """Configuration file"""
-import os
+from os import getenv
 
 
-class Config(object):
+class Config():
     """basic cofig class"""
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET_KEY = os.getenv('SECRET')
-    DATABASE_URL = os.getenv('DATABASE_URL')
+    SECRET_KEY = getenv('SECRET')
+    DATABASE_URL = getenv('DATABASE_URL')
 
 
 class DevelopmentConfig(Config):
@@ -18,7 +18,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """When its under testing mode"""
     TESTING = True
-    DATABASE_URL = "dbname='fooddb' host='127.0.0.1' port='5432' user='postgres' password=''"
+    DATABASE_URL = getenv('DATABASE_TEST_URL')
     DEBUG = True
 
 app_config = {
