@@ -151,7 +151,7 @@ class MenuItems(Resource):
             orders_dict['description'] = menu_item[3]
             menu_list.append(orders_dict)
         response = jsonify(
-            {'message': 'Available food items in the menu', 'Menu List': menu_list})
+            {'message': 'Available food items in the menu', 'menu': menu_list})
         response.status_code = 200
         return response
 
@@ -235,13 +235,13 @@ class OrderItems(Resource):
         return response
 
 
-class OrderItem(Resource):
+class UserOrders(Resource):
     """docstring for Others"""
 
     @token
-    def get(self, active_user, order_id):
+    def get(self, active_user, user_id):
         '''returns one order'''
-        orders = check_user_orders(order_id)
+        orders = check_user_orders(user_id)
         if not orders:
             return jsonify({"message": "No orders found for that user"})
         order_list = []
@@ -256,6 +256,32 @@ class OrderItem(Resource):
             order_details['ordered_by'] = user[1]
             order_list.append(order_details)
         response = jsonify({'message': 'Users orders', 'orders': order_list})
+        response.status_code = 200
+        return response
+
+
+class OrderItem(Resource):
+    """docstring for Others"""
+
+    @token
+    def get(self, active_user, order_id):
+        '''returns one order'''
+        if not active_user['admin']:
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
+        order = single_order_id(order_id)
+        if not order:
+            return jsonify({"message": "No order found with that id"})
+
+        user = single_user_id(order[5])
+        order_details = {}
+        order_details['id'] = order[0]
+        order_details['name'] = order[1]
+        order_details['address'] = order[2]
+        order_details['quantity'] = order[3]
+        order_details['status'] = order[4]
+        order_details['ordered_by'] = user[1]
+        response = jsonify(
+            {'message': 'order', 'orders': order_details})
         response.status_code = 200
         return response
 
