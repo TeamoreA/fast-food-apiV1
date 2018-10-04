@@ -1,16 +1,17 @@
 """Models and tokens"""
-from os import getenv
+import os
 import re
 from functools import wraps
 from flask import jsonify, request
-# from instance.config import Config
+
 import jwt
 import psycopg2
+from instance.config import Config
 from .datamodels import single_user_id
 
 
-conn = psycopg2.connect(getenv('DATABASE_URL'))
-# conn = psycopg2.connect(Config.DATABASE_URL)
+# conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+conn = psycopg2.connect(Config.DATABASE_URL)
 cur = conn.cursor()
 
 
@@ -30,7 +31,7 @@ def token(f):
             return response
 
         try:
-            data = jwt.decode(token, getenv('SECRET'))
+            data = jwt.decode(token, Config.SECRET_KEY)
             user = single_user_id(data['id'])
             active_user = {}
             active_user['id'] = user[0]
@@ -62,3 +63,8 @@ class Validators:
     def validate_status(self, status):
         if status == "New" or status == "Processing"or status == "Cancelled" or status == "Complete":
             return status
+
+    # def validate_price(self, price):
+    #     """validates the user address"""
+    #     regex = "^[\d+\.\d{1,2}]+$"
+    #     return re.match(regex, email)

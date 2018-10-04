@@ -127,7 +127,8 @@ class Login(Resource):
         if check_password_hash(user[3], request_data['password']):
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=60)}, Config.SECRET_KEY)
-            return jsonify({'token': token.decode('UTF-8')})
+            return jsonify({'message': 'You logged in successfully',
+                            'token': token.decode('UTF-8')})
         response = jsonify({'message': 'Login required!'})
         response.status_code = 401
         return response
@@ -254,7 +255,7 @@ class OrderItem(Resource):
             order_details['status'] = order[4]
             order_details['ordered_by'] = user[1]
             order_list.append(order_details)
-        response = jsonify({'orders': order_list})
+        response = jsonify({'message': 'Users orders', 'orders': order_list})
         response.status_code = 200
         return response
 

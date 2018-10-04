@@ -1,10 +1,9 @@
 """Database models"""
-from os import getenv
 import psycopg2
 # local imports
-# from instance.config import Config
-conn = psycopg2.connect(getenv('DATABASE_URI'))
-# conn = psycopg2.connect(Config.DATABASE_URL)
+from instance.config import Config
+conn = psycopg2.connect(Config.DATABASE_URL)
+# cur = conn.cursor()
 
 
 def post_users(username, useremail, psw):
