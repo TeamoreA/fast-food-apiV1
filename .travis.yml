@@ -1,9 +1,5 @@
 language: python
 
-env: 
-  DATABASE_URL = "postgres://zdqbfozzawwxpp:06212891ab111f74ac6455befaa28595f2f9ccb5996f5da4f94d2681e47b7b53@ec2-107-21-98-165.compute-1.amazonaws.com:5432/d6s5c7nj79e8ub" 
-  FLASK_ENV = 'development'
-
 python:
   - "3.6"
 
@@ -16,7 +12,7 @@ addon:
 
 before_script:
   - psql -c 'CREATE DATABASE fooddb;' -U postgres
-  - psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA postgres"
+  - psql -c 'CREATE DATABASE testdb;' -U postgres
 
 script:
   - nosetests --with-coverage --cover-erase --cover-package=app/test

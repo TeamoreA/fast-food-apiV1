@@ -3,15 +3,14 @@ import os
 import re
 from functools import wraps
 from flask import jsonify, request
+from instance.config import Config
 import jwt
 import psycopg2
-from flask import current_app
-from instance.config import Config
 from .datamodels import single_user_id
 
 
+# conn = psycopg2.connect(os.getenv('DATABASE_URL'))
 conn = psycopg2.connect(Config.DATABASE_URL)
-# conn = psycopg2.connect(current_app.config['DATABASE_URL'])
 cur = conn.cursor()
 
 
@@ -37,7 +36,7 @@ def token(f):
             active_user['id'] = user[0]
             active_user['name'] = user[1]
             active_user['email'] = user[2]
-            active_user['admin'] = user[3]
+            active_user['admin'] = user[4]
 
         except:
             response = jsonify({'message': 'Tokens do not match or expired!'})
@@ -48,7 +47,7 @@ def token(f):
 
 
 class Validators:
-    """Validators class with regex"""
+    """docstring for Validators"""
 
     def validate_name(self, name):
         """Validates the name"""
@@ -61,5 +60,10 @@ class Validators:
         return re.match(regex, email)
 
     def validate_status(self, status):
-        if status == "New" or status == "Processing" or status == "Complete":
+        if status == "New" or status == "Processing"or status == "Cancelled" or status == "Complete":
             return status
+
+    # def validate_price(self, price):
+    #     """validates the user address"""
+    #     regex = "^[\d+\.\d{1,2}]+$"
+    #     return re.match(regex, email)

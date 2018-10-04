@@ -1,9 +1,8 @@
 """runs the app"""
-from os import getenv
+import os
 from app import create_app
-from flask import current_app
 
-config_name = getenv('FLASK_ENV')
+config_name = os.getenv('FLASK_ENV')
 app = create_app(config_name)
 
 
