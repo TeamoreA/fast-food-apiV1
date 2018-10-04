@@ -52,7 +52,7 @@ class TestBase(unittest.TestCase):
         '''Helper method to register a user'''
 
         response = self.client.post(
-            '/api/v2/users',
+            '/api/v2/auth/users',
             data=json.dumps(registration_data),
             headers=self.header_no_token)
         return response
@@ -60,7 +60,7 @@ class TestBase(unittest.TestCase):
     def login_helper(self, login_data):
         '''login helper funnction'''
         test_response = self.client.post(
-            '/api/v2/login',
+            '/api/v2/auth/login',
             data=json.dumps(login_data),
             headers=self.header_no_token)
         response_data = json.loads(test_response.data.decode('utf-8'))['token']
@@ -99,7 +99,7 @@ class TestApi(TestBase):
         '''method to test updating user data'''
         self.test_user_can_post_menu_item_helper()
         response = self.client.put(
-            '/api/v2/users/1',
+            '/api/v2/auth/users/1',
             data=json.dumps(self.sample_registration_data),
             headers=self.admin_header)
         self.assertIn("User details edited successfully", str(response.data))
@@ -143,8 +143,8 @@ class TestApi(TestBase):
         self.assertIn('No order found with that id', str(response.data))
         self.assertEqual(response.status_code, 200)
 
-    def test_user_can_get_order_items(self):
-        '''Test that user can get ordr items'''
+    def test_user_cannot_get_order_items_before_creating(self):
+        '''Test that user can get order items'''
         self.promote_user_helper()
         response = self.client.get(
             '/api/v2/orders',

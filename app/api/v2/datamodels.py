@@ -1,4 +1,5 @@
 """Database models"""
+from os import getenv
 import psycopg2
 # local imports
 from instance.config import Config
