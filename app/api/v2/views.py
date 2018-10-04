@@ -149,7 +149,8 @@ class MenuItems(Resource):
             orders_dict['price'] = "$" + str(menu_item[2])
             orders_dict['description'] = menu_item[3]
             menu_list.append(orders_dict)
-        response = jsonify({'Menu List': menu_list})
+        response = jsonify(
+            {'message': 'Available food items in the menu', 'Menu List': menu_list})
         response.status_code = 200
         return response
 
