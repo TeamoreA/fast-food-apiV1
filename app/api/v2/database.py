@@ -1,8 +1,9 @@
 """my models to create tables"""
 # import os
 import psycopg2
-
+# local imports
 from instance.config import Config
+from .datamodels import single_user_email, single_user_name,
 
 
 class Models():
@@ -24,7 +25,7 @@ class Models():
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(255) NOT NULL UNIQUE,
                     price INTEGER NOT NULL,
-                    description VARCHAR(255) 
+                    description VARCHAR(255)
                     )
             """,
             """
@@ -52,3 +53,18 @@ class Models():
         finally:
             if conn is not None:
                 conn.close()
+
+    def post_admin(self):
+        """Creates a new user"""
+        conn = psycopg2.connect(Config.DATABASE_URL)
+        cur = conn.cursor()
+        user = single_user_name(request_data['name'])
+        email = single_user_email(request_data['email'])
+        if not user and not email:
+            cur.execute(
+                "INSERT INTO\
+                users (name, email, password, admin)\
+                  VALUES\
+                  ('Admin', 'admin@app.com', 'password', True)")
+        cur.close()
+        conn.commit()

@@ -18,19 +18,20 @@ def create_app(config_name):
     # app.config.from_pyfile('config.py')
     with app.app_context():
         Models().init_db()
+        Models().post_admin()
 
     # version 1 routes
     api.add_resource(FoodItems, '/api/v1/orders')
     api.add_resource(FoodItem, '/api/v1/orders/<int:order_id>')
     # login routes
-    api.add_resource(Login, '/api/v2/auth/login')
+    api.add_resource(Login, '/api/v2/auth/signin')
 
     api.add_resource(OrderItems, '/api/v2/orders')
     api.add_resource(OrderItem, '/api/v2/orders/<int:order_id>')
 
     api.add_resource(UserOrders, '/api/v2/users/orders/<int:user_id>')
 
-    api.add_resource(Users, '/api/v2/auth/users')
+    api.add_resource(Users, '/api/v2/auth/signup')
     api.add_resource(User, '/api/v2/auth/users/<int:user_id>')
 
     api.add_resource(PromoteUser, '/api/v2/promote/<int:user_id>')

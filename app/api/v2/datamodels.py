@@ -26,6 +26,16 @@ def single_user_name(username):
     return user
 
 
+def single_user_email(email):
+    """Gets a user with a specific name"""
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users WHERE email = (%s);',
+                (email,))
+    user = cur.fetchone()
+    cur.close()
+    return user
+
+
 def single_user_id(userid):
     """gets a user with a specific id"""
     cur = conn.cursor()

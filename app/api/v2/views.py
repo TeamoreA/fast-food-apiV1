@@ -7,7 +7,7 @@ import jwt
 import psycopg2
 from instance.config import Config
 from .models import token, Validators
-from .datamodels import single_user_name,\
+from .datamodels import single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
@@ -39,7 +39,8 @@ class Users(Resource):
         if not Validators().valid_email(request_data['email']):
             return jsonify({'message': 'Invalid user email!'})
         user = single_user_name(request_data['name'])
-        if user:
+        email = single_user_email(request_data['email'])
+        if user or email:
             return jsonify({'message': 'User already exists'})
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
@@ -55,9 +56,8 @@ class PromoteUser(Resource):
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
-        user = single_user_id(1)
-        if not user:
-            return jsonify({'message': 'Sorry you can not perform this function'})
+        if not active_user['admin']:
+            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
         promote_user(user_id)
         response = jsonify({"message": "User is an admin now"})
         response.status_code = 201
