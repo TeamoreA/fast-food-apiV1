@@ -1,19 +1,18 @@
 """Order api endpoits"""
 import datetime
-import os
-from flask import jsonify, request, json
-from instance.config import Config
-from flask_restful import Resource, reqparse
+from flask import jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_restful import Resource, reqparse
 import jwt
+import psycopg2
+from instance.config import Config
 from .models import token, Validators
-from .datamodels import single_user_email, single_user_name,\
+from .datamodels import single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order, single_order_user_id
-import psycopg2
-from instance.config import Config
+    single_order_id, update_order
+
 
 conn = psycopg2.connect(Config.DATABASE_URL)
 
@@ -96,6 +95,8 @@ class User(Resource):
     @token
     def delete(self, active_user, user_id):
         """deletes a user"""
+        if not active_user['admin']:
+            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
         user = single_user_name(user_id)
         if not user:
             return jsonify({'message': 'No user found with that name, The name is case sensitive'})
@@ -125,7 +126,7 @@ class Login(Resource):
             return response
         if check_password_hash(user[3], request_data['password']):
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
-            ) + datetime.timedelta(minutes=45)}, Config.SECRET_KEY)
+            ) + datetime.timedelta(minutes=60)}, Config.SECRET_KEY)
             return jsonify({'token': token.decode('UTF-8')})
         response = jsonify({'message': 'Login required!'})
         response.status_code = 401
@@ -281,10 +282,10 @@ class OrderItem(Resource):
         order = single_order_id(order_id)
         if not order:
             return jsonify({'message': 'No order found with that id'})
-        user = single_user_id(order[3])
+        user = single_user_id(order[5])
         if not user:
             return jsonify({'message': 'Permission denied! This is not your order item'})
-        if order[3] != 'Complete':
+        if order[4] != 'Complete':
             response = jsonify({'message': 'Order should be completed first!'})
         delete_order(order_id)
         conn.close()

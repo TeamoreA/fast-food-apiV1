@@ -4,7 +4,7 @@ import json
 
 # local imports
 from app import create_app
-# from app.api.v2.database import Models
+from app.api.v2.datamodels import drop_tables
 
 
 class TestBase(unittest.TestCase):
@@ -73,8 +73,18 @@ class TestBase(unittest.TestCase):
             headers=self.admin_header)
         return response
 
-    # def tearDown(self):
-    #     Models().drop_tables()
+    def test_user_can_post_menu_item_helper(self):
+        '''add food item to the menu'''
+        self.promote_user_helper()
+        response = self.client.post(
+            '/api/v2/menu',
+            data=json.dumps(self.sample_menu_data),
+            headers=self.admin_header)
+        self.assertIn('Food item created successfully"', str(response.data))
+        self.assertEqual(response.status_code, 201)
+
+    def tearDown(self):
+        drop_tables()
 
 
 class TestApi(TestBase):
@@ -83,20 +93,21 @@ class TestApi(TestBase):
     def test_to_register_a_new_user(self):
         """ The test should return status code 200 for success (POST request)"""
         response = self.registration_response
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
-    def test_user_cannot_post_menu_item(self):
-        '''add food item to the menu'''
-        self.promote_user_helper()
-        response = self.client.post(
-            '/api/v2/menu',
-            data=json.dumps(self.sample_menu_data),
+    def test_user_update_their_credentials(self):
+        '''method to test updating user data'''
+        self.test_user_can_post_menu_item_helper()
+        response = self.client.put(
+            '/api/v2/users/1',
+            data=json.dumps(self.sample_registration_data),
             headers=self.admin_header)
-        self.assertIn('Menu item already exists"', str(response.data))
-        self.assertEqual(response.status_code, 200)
+        self.assertIn("User details edited successfully", str(response.data))
+        self.assertEqual(response.status_code, 201)
 
     def test_user_can_view_menu_items(self):
         '''method to test getting menu items'''
+        self.test_user_can_post_menu_item_helper()
         response = self.client.get(
             '/api/v2/menu',
             headers=self.admin_header)
@@ -115,6 +126,7 @@ class TestApi(TestBase):
 
     def test_admin_cant_pass_an_invalid_status(self):
         '''test can't update a wrong status'''
+        self.promote_user_helper()
         response = self.client.put(
             '/api/v2/orders/1',
             data=json.dumps(self.sample_invalid_status),
@@ -124,6 +136,7 @@ class TestApi(TestBase):
 
     def test_admin_cant_delete_food_item_when_not_complete(self):
         '''test that orders get deleted when status is complete'''
+        self.promote_user_helper()
         response = self.client.delete(
             '/api/v2/orders/1',
             headers=self.admin_header)
@@ -132,6 +145,7 @@ class TestApi(TestBase):
 
     def test_user_can_get_order_items(self):
         '''Test that user can get ordr items'''
+        self.promote_user_helper()
         response = self.client.get(
             '/api/v2/orders',
             headers=self.admin_header)
@@ -140,10 +154,11 @@ class TestApi(TestBase):
 
     def test_user_can_get_order_items_for_a_user(self):
         '''Test to get orders made by a specific user'''
+        self.test_user_can_post_menu_item_helper()
         response = self.client.get(
             '/api/v2/orders/1',
             headers=self.admin_header)
-        self.assertIn('No orders found for that user', str(response.data))
+        self.assertIn('message', str(response.data))
         self.assertEqual(response.status_code, 200)
 
 

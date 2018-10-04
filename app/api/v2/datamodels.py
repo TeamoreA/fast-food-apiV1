@@ -3,10 +3,7 @@ import psycopg2
 # local imports
 from instance.config import Config
 
-# conn = psycopg2.connect(
-#     "dbname='fooddb' host= '127.0.0.1' port='5432' user='postgres' password=''")
 conn = psycopg2.connect(Config.DATABASE_URL)
-# cur = conn.cursor()
 
 
 def post_users(username, useremail, psw):
@@ -16,16 +13,6 @@ def post_users(username, useremail, psw):
                 (username, useremail, psw))
     cur.close()
     conn.commit()
-
-
-def single_user_email(useremail):
-    """Gets a user with a specific email"""
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM users WHERE email = (%s);',
-                (useremail,))
-    user = cur.fetchone()
-    cur.close()
-    return user
 
 
 def single_user_name(username):
@@ -146,20 +133,18 @@ def update_order(status, order_id):
     conn.commit()
 
 
-def single_order_user_id(name, user_id):
-    """matching user with the orders"""
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM orders WHERE name = (%s) AND user_id = (%s);',
-                (name, user_id))
-    order = cur.fetchone()
-    cur.close()
-    return order
-
-
 def delete_order(order_id):
     """delete an order"""
     cur = conn.cursor()
     cur.execute('DELETE FROM orders WHERE id = (%s);', (order_id,))
+    cur.close()
+    conn.commit()
+
+
+def drop_tables():
+    """delete an order"""
+    cur = conn.cursor()
+    cur.execute('DROP TABLE users, orders, food_items;')
     cur.close()
     conn.commit()
 
