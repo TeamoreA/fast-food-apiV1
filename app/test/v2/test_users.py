@@ -16,13 +16,19 @@ class TestBase(unittest.TestCase):
         self.client = self.app.test_client()
         self.header_no_token = {'content-type': 'application/json'}
         self.sample_registration_data = {
-            "name": "Sample",
+            "username": "Sample",
             "email": "sample@app.com",
             "password": "password",
             "confirm_password": "password"
         }
+        self.user_update_data = {
+            "username": "Sample two",
+            "email": "sampletwo@app.com",
+            "password": "password",
+            "confirm_password": "password"
+        }
         self.sample_login_data = {
-            "name": "Sample",
+            "username": "Admin",
             "password": "password"
         }
 
@@ -30,6 +36,11 @@ class TestBase(unittest.TestCase):
             "name": "Pizza",
             "description": "New Pizza in town",
             "price": 200
+        }
+        self.sample_order_data = {
+            "name": "Pizza",
+            "address": "town",
+            "quantity": 2
         }
         self.sample_order_without_quantity = {
             "name": "Pizza",
@@ -52,7 +63,7 @@ class TestBase(unittest.TestCase):
         '''Helper method to register a user'''
 
         response = self.client.post(
-            '/api/v2/auth/users',
+            '/api/v2/auth/signup',
             data=json.dumps(registration_data),
             headers=self.header_no_token)
         return response
@@ -60,7 +71,7 @@ class TestBase(unittest.TestCase):
     def login_helper(self, login_data):
         '''login helper funnction'''
         test_response = self.client.post(
-            '/api/v2/auth/login',
+            '/api/v2/auth/signin',
             data=json.dumps(login_data),
             headers=self.header_no_token)
         response_data = json.loads(test_response.data.decode('utf-8'))['token']
@@ -83,6 +94,17 @@ class TestBase(unittest.TestCase):
         self.assertIn('Food item created successfully"', str(response.data))
         self.assertEqual(response.status_code, 201)
 
+    def test_user_can_post_order_item_helper(self):
+        '''order food item from the menu'''
+        self.promote_user_helper()
+        self.test_user_can_post_menu_item_helper()
+        response = self.client.post(
+            '/api/v2/orders',
+            data=json.dumps(self.sample_order_data),
+            headers=self.admin_header)
+        self.assertIn('Order created successfully"', str(response.data))
+        self.assertEqual(response.status_code, 201)
+
     def tearDown(self):
         drop_tables()
 
@@ -100,10 +122,10 @@ class TestApi(TestBase):
         self.test_user_can_post_menu_item_helper()
         response = self.client.put(
             '/api/v2/auth/users/1',
-            data=json.dumps(self.sample_registration_data),
+            data=json.dumps(self.user_update_data),
             headers=self.admin_header)
         self.assertIn("User details edited successfully", str(response.data))
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def test_user_can_view_menu_items(self):
         '''method to test getting menu items'''
@@ -112,6 +134,24 @@ class TestApi(TestBase):
             '/api/v2/menu',
             headers=self.admin_header)
         self.assertIn("New Pizza in town", str(response.data))
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_can_get_user_orders(self):
+        '''orders made by a single user'''
+        self.test_user_can_post_order_item_helper()
+        response = self.client.get(
+            '/api/v2/users/orders/1',
+            headers=self.admin_header)
+        self.assertIn("Users orders", str(response.data))
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_can_get_a_single_order(self):
+        '''orders made by a single user'''
+        self.test_user_can_post_order_item_helper()
+        response = self.client.get(
+            '/api/v2/orders/1',
+            headers=self.admin_header)
+        self.assertIn("orders", str(response.data))
         self.assertEqual(response.status_code, 200)
 
     def test_user_can_order_food_item(self):
@@ -134,13 +174,14 @@ class TestApi(TestBase):
         self.assertIn('Invalid Status!', str(response.data))
         self.assertEqual(response.status_code, 200)
 
-    def test_admin_cant_delete_food_item_when_not_complete(self):
-        '''test that orders get deleted when status is complete'''
+    def test_admin_can_delete_food_order(self):
+        '''method to test order deletion'''
         self.promote_user_helper()
+        self.test_user_can_post_order_item_helper()
         response = self.client.delete(
             '/api/v2/orders/1',
             headers=self.admin_header)
-        self.assertIn('No order found with that id', str(response.data))
+        self.assertIn('Order deleted successfull', str(response.data))
         self.assertEqual(response.status_code, 200)
 
     def test_user_cannot_get_order_items_before_creating(self):
@@ -159,7 +200,7 @@ class TestApi(TestBase):
             '/api/v2/orders/1',
             headers=self.admin_header)
         self.assertIn('message', str(response.data))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == '__main__':

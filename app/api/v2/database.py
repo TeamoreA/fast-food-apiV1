@@ -1,6 +1,7 @@
 """my models to create tables"""
 # import os
 import psycopg2
+from werkzeug.security import generate_password_hash
 # local imports
 from instance.config import Config
 from .datamodels import single_user_email, single_user_name
@@ -60,11 +61,12 @@ class Models():
         cur = conn.cursor()
         user = single_user_name('Admin')
         email = single_user_email('admin@app.com')
+        hashed_pw = generate_password_hash('password', method='sha256')
         if not user and not email:
             cur.execute(
                 "INSERT INTO\
                 users (name, email, password, admin)\
                   VALUES\
-                  ('Admin', 'admin@app.com', 'password', True)")
+                  ('Admin', 'admin@app.com', %s, True)", (hashed_pw,))
         cur.close()
         conn.commit()
