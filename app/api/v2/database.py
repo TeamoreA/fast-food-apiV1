@@ -1,8 +1,9 @@
 """my models to create tables"""
 # import os
+from os import getenv
 import psycopg2
 
-from instance.config import Config
+# from instance.config import Config
 
 
 class Models():
@@ -39,8 +40,8 @@ class Models():
             """)
         conn = None
         try:
-            conn = psycopg2.connect(Config.DATABASE_URL)
-            # conn = psycopg2.connect(os.getenv('DATABASE_URL'))
+            # conn = psycopg2.connect(Config.DATABASE_URL)
+            conn = psycopg2.connect(getenv('DATABASE_URI'))
             cur = conn.cursor()
             for query in queries:
                 cur.execute(query)
