@@ -3,7 +3,7 @@
 import psycopg2
 # local imports
 from instance.config import Config
-from .datamodels import single_user_email, single_user_name,
+from .datamodels import single_user_email, single_user_name
 
 
 class Models():
@@ -58,8 +58,8 @@ class Models():
         """Creates a new user"""
         conn = psycopg2.connect(Config.DATABASE_URL)
         cur = conn.cursor()
-        user = single_user_name(request_data['name'])
-        email = single_user_email(request_data['email'])
+        user = single_user_name('Admin')
+        email = single_user_email('admin@app.com')
         if not user and not email:
             cur.execute(
                 "INSERT INTO\

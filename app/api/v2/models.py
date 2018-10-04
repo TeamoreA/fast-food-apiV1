@@ -40,7 +40,8 @@ def token(f):
             active_user['admin'] = user[4]
 
         except:
-            response = jsonify({'message': 'Tokens do not match or expired!'})
+            response = jsonify(
+                {'message': 'Invalid token, Please login to get a token!'})
             response.status_code = 401
             return response
         return f(*args, active_user, **kwargs)
@@ -61,10 +62,11 @@ class Validators:
         return re.match(regex, email)
 
     def validate_status(self, status):
-        if status == "New" or status == "Processing"or status == "Cancelled" or status == "Complete":
+        '''validator for the status field'''
+        if status == "New" or status == "Processing"or status == "Complete"or status == "Cancelled":
             return status
 
-    # def validate_price(self, price):
-    #     """validates the user address"""
-    #     regex = "^[\d+\.\d{1,2}]+$"
-    #     return re.match(regex, email)
+    def validate_password(self, password):
+        '''validate the passwoord'''
+        if len(password) > 5:
+            return password

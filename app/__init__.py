@@ -4,7 +4,7 @@ from flask import Flask
 from flask_restful import Resource, Api
 from instance.config import app_config
 from app.api.V1.views import FoodItem, FoodItems
-from app.api.v2.views import MenuItems, Users, User, OrderItems,\
+from app.api.v2.views import MenuItems, Users, SingleUser, OrderItems,\
     OrderItem, Login, PromoteUser, UserOrders
 from app.api.v2.database import Models
 
@@ -32,7 +32,7 @@ def create_app(config_name):
     api.add_resource(UserOrders, '/api/v2/users/orders/<int:user_id>')
 
     api.add_resource(Users, '/api/v2/auth/signup')
-    api.add_resource(User, '/api/v2/auth/users/<int:user_id>')
+    api.add_resource(SingleUser, '/api/v2/auth/users/<int:user_id>')
 
     api.add_resource(PromoteUser, '/api/v2/promote/<int:user_id>')
 

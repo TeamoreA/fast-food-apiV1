@@ -33,15 +33,17 @@ class Users(Resource):
                             help="Confirm_password field is required")
         request_data = parser.parse_args()
         if request_data['password'] != request_data['confirm_password']:
-            return jsonify({'message': 'your passwords are inconsistent!'})
+            return jsonify({'message': 'your passwords are inconsistent!'}), 400
         if not Validators().validate_name(request_data['name']):
-            return jsonify({'message': 'Invalid user name!'})
+            return jsonify({'message': 'Invalid user name!'}), 400
         if not Validators().valid_email(request_data['email']):
-            return jsonify({'message': 'Invalid user email!'})
+            return jsonify({'message': 'Invalid user email!'}), 400
+        if not Validators().validate_password(request_data['password']):
+            return jsonify({'message': 'password must be between 6 and 60 letters!'}), 400
         user = single_user_name(request_data['name'])
         email = single_user_email(request_data['email'])
         if user or email:
-            return jsonify({'message': 'User already exists'})
+            return jsonify({'message': 'User already exists'}), 409
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
         post_users(request_data["name"], request_data['email'], hashed_pw)
@@ -60,11 +62,11 @@ class PromoteUser(Resource):
             return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
         promote_user(user_id)
         response = jsonify({"message": "User is an admin now"})
-        response.status_code = 201
+        response.status_code = 200
         return response
 
 
-class User(Resource):
+class SingleUser(Resource):
     """docstring for OtherUsers"""
     @token
     def put(self, active_user, user_id):
@@ -79,27 +81,27 @@ class User(Resource):
         request_data = parser.parse_args()
         user = single_user_id(user_id)
         if not user:
-            return jsonify({'message': 'No user found with that id'})
+            return jsonify({'message': 'No user found with that id'}), 404
         if not Validators().validate_name(request_data['name']):
-            return jsonify({'message': 'Invalid user name!'})
+            return jsonify({'message': 'Invalid user name!'}), 400
         if not Validators().valid_email(request_data['email']):
-            return jsonify({'message': 'Invalid user email!'})
+            return jsonify({'message': 'Invalid user email!'}), 400
         hashed_pw = generate_password_hash(
             request_data['password'], method='sha256')
         update_user(request_data['name'], request_data[
             'email'], hashed_pw, user_id)
         response = jsonify({"message": "User details edited successfully"})
-        response.status_code = 201
+        response.status_code = 200
         return response
 
     @token
     def delete(self, active_user, user_id):
         """deletes a user"""
         if not active_user['admin']:
-            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
+            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'}), 403
         user = single_user_name(user_id)
         if not user:
-            return jsonify({'message': 'No user found with that name, The name is case sensitive'})
+            return jsonify({'message': 'No user found with that name, The name is case sensitive'}), 404
         delete_user(user_id)
         response = jsonify({'message': 'User deleted successfully'})
         response.status_code = 200
@@ -128,7 +130,7 @@ class Login(Resource):
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=60)}, Config.SECRET_KEY)
             return jsonify({'message': 'You logged in successfully',
-                            'token': token.decode('UTF-8')})
+                            'token': token.decode('UTF-8')}), 200
         response = jsonify({'message': 'Login required!'})
         response.status_code = 401
         return response
@@ -141,7 +143,7 @@ class MenuItems(Resource):
         """returns all orders"""
         menu_items = get_all_menuitems()
         if not menu_items:
-            return jsonify({'message': 'No food items found!'})
+            return jsonify({'message': 'No food items found!'}), 404
         menu_list = []
         for menu_item in menu_items:
             orders_dict = {}
@@ -159,7 +161,7 @@ class MenuItems(Resource):
     def post(self, active_user):
         """adds a new order"""
         if not active_user['admin']:
-            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'})
+            return jsonify({'message': 'Can not perfom this action, Admin privilege required!'}), 403
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True,
                             help="name field is required")
@@ -169,12 +171,12 @@ class MenuItems(Resource):
                             help="Description field is required")
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
-            return jsonify({'message': 'Invalid name!'})
+            return jsonify({'message': 'Invalid name!'}), 400
         if not Validators().validate_name(request_data['description']):
-            return jsonify({'message': 'Invalid Description!'})
+            return jsonify({'message': 'Invalid Description!'}), 400
         food_item = single_menu_name(request_data["name"])
         if food_item:
-            return jsonify({'message': 'Menu item already exists'})
+            return jsonify({'message': 'Menu item already exists'}), 409
         post_menu_items(request_data["name"], request_data[
             "price"], request_data["description"])
         response = jsonify({'Menu': 'Food item created successfully'})
@@ -188,10 +190,10 @@ class OrderItems(Resource):
     def get(self, active_user):
         """returns all orders"""
         if not active_user['admin']:
-            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"}), 403
         orders = get_all_orders()
         if not orders:
-            return jsonify({'message': 'No orders found!'})
+            return jsonify({'message': 'No orders found!'}), 404
         order_list = []
         for order in orders:
             user = single_user_id(order[5])
@@ -220,10 +222,10 @@ class OrderItems(Resource):
         request_data = parser.parse_args()
         confirm_order = single_menu_name(request_data['name'])
         if not Validators().validate_name(request_data['name']):
-            return jsonify({'message': 'Invalid name!'})
+            return jsonify({'message': 'Invalid name!'}), 400
 
         if not Validators().validate_name(request_data['address']):
-            return jsonify({'message': 'Invalid address!'})
+            return jsonify({'message': 'Invalid address!'}), 400
         if not confirm_order:
             response = jsonify({'message': 'Food item not in our menu!'})
             response.status_code = 400
@@ -243,7 +245,7 @@ class UserOrders(Resource):
         '''returns one order'''
         orders = check_user_orders(user_id)
         if not orders:
-            return jsonify({"message": "No orders found for that user"})
+            return jsonify({"message": "No orders found for that user"}), 404
         order_list = []
         for order in orders:
             user = single_user_id(order[5])
@@ -267,10 +269,10 @@ class OrderItem(Resource):
     def get(self, active_user, order_id):
         '''returns one order'''
         if not active_user['admin']:
-            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"}), 403
         order = single_order_id(order_id)
         if not order:
-            return jsonify({"message": "No order found with that id"})
+            return jsonify({"message": "No order found with that id"}), 404
 
         user = single_user_id(order[5])
         order_details = {}
@@ -289,19 +291,19 @@ class OrderItem(Resource):
     def put(self, active_user, order_id):
         """updates an order"""
         if not active_user['admin']:
-            return jsonify({"message": "Cannot perform this action, Admin privilege required!"})
+            return jsonify({"message": "Cannot perform this action, Admin privilege required!"}), 403
         parser = reqparse.RequestParser()
         parser.add_argument('status', type=str, required=True,
                             help="Status field is required")
         request_data = parser.parse_args()
         if not Validators().validate_status(request_data['status']):
-            return jsonify({'message': 'Invalid Status!'})
+            return jsonify({'message': 'Invalid Status!'}), 400
         order = single_order_id(order_id)
         if not order:
-            return jsonify({'message': 'No order found with that id'})
+            return jsonify({'message': 'No order found with that id'}), 404
         update_order(request_data['status'], order_id)
         response = jsonify({'Order': 'Order Status updated successfully'})
-        response.status_code = 201
+        response.status_code = 200
         return response
 
     @token
@@ -309,12 +311,13 @@ class OrderItem(Resource):
         """deletes an oder"""
         order = single_order_id(order_id)
         if not order:
-            return jsonify({'message': 'No order found with that id'})
+            return jsonify({'message': 'No order found with that id'}), 404
         user = single_user_id(order[5])
         if not user:
-            return jsonify({'message': 'Permission denied! This is not your order item'})
+            return jsonify({'message': 'Permission denied! This is not your order item'}), 403
         if order[4] != 'Complete':
-            response = jsonify({'message': 'Order should be completed first!'})
+            response = jsonify(
+                {'message': 'Order should be completed first!'}), 400
         delete_order(order_id)
         conn.close()
         response = jsonify({'message': 'Order deleted successfully'})
