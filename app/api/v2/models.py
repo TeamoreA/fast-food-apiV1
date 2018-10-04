@@ -63,7 +63,7 @@ class Validators:
 
     def validate_status(self, status):
         '''validator for the status field'''
-        if status == "New" or status == "Processing"or status == "Complete"or status == "Cancelled":
+        if status in ("Processing", "Complete", "Cancelled"):
             return status
 
     def validate_password(self, password):

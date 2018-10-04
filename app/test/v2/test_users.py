@@ -16,13 +16,13 @@ class TestBase(unittest.TestCase):
         self.client = self.app.test_client()
         self.header_no_token = {'content-type': 'application/json'}
         self.sample_registration_data = {
-            "name": "Admin",
-            "email": "admin@app.com",
+            "name": "Sample",
+            "email": "sample@app.com",
             "password": "password",
             "confirm_password": "password"
         }
         self.sample_login_data = {
-            "name": "Admin",
+            "name": "Sample",
             "password": "password"
         }
 
