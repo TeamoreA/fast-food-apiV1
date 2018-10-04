@@ -7,7 +7,7 @@ class Config(object):
     DEBUG = False
     CSRF_ENABLED = True
     SECRET_KEY = getenv('SECRET')
-    DATABASE_URL = getenv('DATABASE_URL')
+    DATABASE_URL = getenv('DATABASE_URI')
 
 
 class ProductionConfig(Config):
