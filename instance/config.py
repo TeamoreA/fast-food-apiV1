@@ -10,6 +10,12 @@ class Config(object):
     DATABASE_URL = os.getenv('DATABASE_URI')
 
 
+class ProductionConfig(Config):
+    """When its under production mode"""
+    TESTING = False
+    DEBUG = False
+
+
 class DevelopmentConfig(Config):
     """When its under development mode"""
     DEBUG = True
@@ -22,6 +28,7 @@ class TestingConfig(Config):
     DEBUG = True
 
 app_config = {
+    'production': ProductionConfig,
     'development': DevelopmentConfig,
     'testing': TestingConfig
 }
