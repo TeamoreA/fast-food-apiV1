@@ -1,13 +1,13 @@
 """Configuration file"""
-import os
+from os import getenv
 
 
 class Config(object):
     """basic cofig class"""
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET_KEY = os.getenv('SECRET')
-    DATABASE_URL = os.getenv('DATABASE_URI')
+    SECRET_KEY = getenv('SECRET')
+    DATABASE_URL = getenv('DATABASE_URL')
 
 
 class ProductionConfig(Config):
