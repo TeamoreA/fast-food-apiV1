@@ -1,4 +1,4 @@
-# orders-api
+# FAST-FOOD-FAST
 
  Thanks for choosing this API.This is a simple order management app.This RESTful-api has been written in python and flask.This api enables you to create an order, see all the orders that you have created, getting a specific order, update an order and finally to delete an order.This is the stable version (V1). Follow the guide below on how to use it.
 
@@ -11,13 +11,8 @@
 ## Basic requirements
 - Python 3
 
-## Aimed Functionalities Endpoints 
-- A user can view all orders
-- A user can view a specific order.
-- A user can create an order.
-- A user can update an order.
-- A user can delete an order.
 
+## Version one endpoints 
 <table>
   <tr>
     <th>Endpoint</th>
@@ -52,6 +47,67 @@
   </tr>
 </table>
 
+## Version two endpoints 
+<table>
+  <tr>
+    <th>Endpoint</th>
+    <th>HTTPS requests</th>
+    <th>Functionality</th>
+  </tr>
+  <tr>
+    <td> /api/v2/auth/signup </td>
+    <td>POST</td>
+    <td>Register a new user</td>
+  </tr>
+ <tr>
+    <td> /api/v2/auth/users/(int:user_id) </td>
+    <td>PUT</td>
+    <td>Update user details</td>
+  </tr>
+  </tr>
+  <tr>
+    <td> /api/v2/auth/signin </td>
+    <td>POST</td>
+    <td>Login a user</td>
+  </tr>
+  <tr>
+    <td> /api/v2/promote/(int:user_id) </td>
+    <td>PUT</td>
+    <td>promote a user to admin</td>
+  </tr>
+  <tr>
+    <td> /api/v2/menu </td>
+    <td>POST</td>
+    <td>Add a food menu</td>
+  </tr>
+  <tr>
+    <td> /api/v2/menu </td>
+    <td>GET</td>
+    <td>Get a list of all menu items</td>
+  </tr>
+  <tr>
+    <td> /api/v2/orders </td>
+    <td>POST</td>
+    <td>Create a new food item</td>
+  </tr>
+  <tr>
+    <td> /api/v2/users/orders/(int:user_id) </td>
+    <td>GET</td>
+    <td>Get users orderlist</td>
+  </tr>
+  <tr>
+    <td> /api/v2/orders </td>
+    <td>GET</td>
+    <td>Get orderlist</td>
+  </tr>
+  <tr>
+    <td> /api/v2/orders/(int:order_id) </td>
+    <td>PUT</td>
+    <td>Edit order status</td>
+  </tr>
+  
+</table>
+
 
 ## How to test locally
 
@@ -59,24 +115,28 @@
 - cd to project folder `fast-food-apiV1`
 - Install virtual environment and activate it
  ```pip install virtualenv
-    source venv/Scripts/activate
+    mkvirtualenv venv
   ```   
 - Install all the depedencies in requirements.txt
 `pip install -r requirements.txt`
+- Create a postgres database named `yourdbname`
 - Export this in your .env file
  ```
   source venv/Scripts/activate
-  export FLASK_APP = 'run.py'
-  export SECRET = 'Your url goes here'
-  export FLASK_ENV = 'development'
+  export FLASK_APP='run.py'
+  export SECRET='yoursecret'
+  export FLASK_ENV='development'
+  export DATABASE_URL="dbname='yourdbname' host='127.0.0.1' port='5432' user='postgres' password=''"
+
+
 ```
+- Run this in the prompt `source .env`
 - In the project folder run `flask run`
 
 ## How to run tests to get the code coverage
-- Install coveralls `pip install coveralls`
-- cd to project folder `cd fast-food-apiV1`
 - Run the following command in the command line `nosetests --with-coverage --cover-erase --cover-package=app/test`
-
+## Hosted app
+- The app is hosted at heroku [HERE](https://andela-food-api.herokuapp.com/).
 ## How to use it
 
 - After the above installations use *POSTMAN* to test the following end-points

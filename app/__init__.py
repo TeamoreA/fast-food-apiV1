@@ -1,6 +1,6 @@
 """ initialise the app"""
 import os
-from flask import Flask
+from flask import Flask, redirect
 from flask_restful import Resource, Api
 from instance.config import app_config
 from app.api.V1.views import FoodItem, FoodItems
@@ -37,5 +37,10 @@ def create_app(config_name):
     api.add_resource(PromoteUser, '/api/v2/promote/<int:user_id>')
 
     api.add_resource(MenuItems, '/api/v2/menu')
+
+    # redirect
+    @app.route('/')
+    def index():
+        return redirect('https://foodapi11.docs.apiary.io/#')
 
     return app
