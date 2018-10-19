@@ -5,7 +5,7 @@
 ## Badges
 
 [![Build Status](https://travis-ci.com/TeamoreA/fast-food-apiV1.svg?branch=fixes-160551023)](https://travis-ci.com/TeamoreA/fast-food-apiV1)
-[![Coverage Status](https://coveralls.io/repos/github/TeamoreA/fast-food-apiV1/badge.svg?branch=fixes-160551023)](https://coveralls.io/github/TeamoreA/fast-food-apiV1?branch=fixes-160551023)
+[![Coverage Status](https://coveralls.io/repos/github/TeamoreA/fast-food-apiV1/badge.svg?branch=develop)](https://coveralls.io/github/TeamoreA/fast-food-apiV1?branch=develop)
 [![Maintainability](https://api.codeclimate.com/v1/badges/875efc35a9ff3f32e748/maintainability)](https://codeclimate.com/github/TeamoreA/fast-food-apiV1/maintainability)
 
 ## Basic requirements
