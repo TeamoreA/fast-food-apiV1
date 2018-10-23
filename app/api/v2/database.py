@@ -26,7 +26,8 @@ class Models():
                     id SERIAL PRIMARY KEY,
                     name VARCHAR(255) NOT NULL UNIQUE,
                     price INTEGER NOT NULL,
-                    description VARCHAR(255)
+                    description VARCHAR(255),
+                    image VARCHAR(255)
                     )
             """,
             """

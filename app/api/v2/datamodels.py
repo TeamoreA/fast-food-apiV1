@@ -16,6 +16,15 @@ def post_users(username, useremail, psw):
     conn.commit()
 
 
+def get_all_users():
+    """gets all users"""
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM users;')
+    users = cur.fetchall()
+    cur.close()
+    return users
+
+
 def single_user_name(username):
     """Gets a user with a specific name"""
     cur = conn.cursor()
@@ -72,11 +81,11 @@ def delete_user(userid):
     conn.commit()
 
 
-def post_menu_items(name, price, description):
+def post_menu_items(name, price, description, image):
     """Creates a new user"""
     cur = conn.cursor()
-    cur.execute("INSERT INTO food_items (name, price, description) VALUES (%s, %s, %s)",
-                (name, price, description))
+    cur.execute("INSERT INTO food_items (name, price, description, image) VALUES (%s, %s, %s, %s)",
+                (name, price, description, image))
     cur.close()
     conn.commit()
 
