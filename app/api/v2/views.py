@@ -11,7 +11,7 @@ from .datamodels import single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order
+    single_order_id, update_order, get_all_users
 
 
 conn = psycopg2.connect(Config.DATABASE_URL)
@@ -58,9 +58,27 @@ class Users(Resource):
         response.status_code = 201
         return response
 
+    def get(self):
+        """returns all users"""
+        users = get_all_users()
+        if not users:
+            return jsonify({'message': 'No users found!'})
+        users_list = []
+        for user in users:
+            users_dict = {}
+            users_dict['id'] = user[0]
+            users_dict['name'] = user[1]
+            users_dict['email'] = user[2]
+            users_dict['admin'] = user[4]
+            users_list.append(users_dict)
+        response = jsonify({'Users': users_list})
+        response.status_code = 200
+        return response
+
 
 class PromoteUser(Resource):
     """docstring for OtherUsers"""
+
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
@@ -77,6 +95,25 @@ class PromoteUser(Resource):
 
 class SingleUser(Resource):
     """docstring for OtherUsers"""
+
+    def get(self, user_id):
+        '''returns one user'''
+        user = single_user_id(user_id)
+        if not user:
+            response_data = jsonify({'message': 'No user found with that id'})
+            response_data.status_code = 404
+            return response_data
+
+        user_details = {}
+        user_details['id'] = user[0]
+        user_details['name'] = user[1]
+        user_details['email'] = user[2]
+        user_details['admin'] = user[4]
+        response = jsonify(
+            {'user': user_details})
+        response.status_code = 200
+        return response
+
     @token
     def put(self, active_user, user_id):
         """Updates users password"""
@@ -168,6 +205,7 @@ class MenuItems(Resource):
             orders_dict['name'] = menu_item[1]
             orders_dict['price'] = "$" + str(menu_item[2])
             orders_dict['description'] = menu_item[3]
+            orders_dict['image'] = menu_item[4]
             menu_list.append(orders_dict)
         response = jsonify(
             {'message': 'Available food items in the menu', 'menu': menu_list})
@@ -198,7 +236,7 @@ class MenuItems(Resource):
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
         post_menu_items(request_data["name"], request_data[
-            "price"], request_data["description"])
+            "price"], request_data["description"], request_data["image"])
         response = jsonify({'Menu': 'Food item created successfully'})
         response.status_code = 201
         return response
