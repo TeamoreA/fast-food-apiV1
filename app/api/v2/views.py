@@ -227,6 +227,8 @@ class MenuItems(Resource):
                             help="Price field is required")
         parser.add_argument('description', type=str, required=True,
                             help="Description field is required")
+        parser.add_argument('image', type=str, required=True,
+                            help="Image URL field is required")
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
@@ -235,8 +237,8 @@ class MenuItems(Resource):
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
-        post_menu_items(request_data["name"], request_data[
-            "price"], request_data["description"], request_data["image"])
+        post_menu_items(request_data["name"], request_data["price"], request_data[
+                        "description"], request_data["image"])
         response = jsonify({'Menu': 'Food item created successfully'})
         response.status_code = 201
         return response
