@@ -232,8 +232,6 @@ class MenuItems(Resource):
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
-        if not Validators().validate_name(request_data['description']):
-            return jsonify({'message': 'Invalid Description!'})
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
