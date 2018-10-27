@@ -54,7 +54,7 @@ class Users(Resource):
             request_data['password'], method='sha256')
         post_users(request_data["username"], request_data['email'], hashed_pw)
         response = jsonify(
-            {'Message': 'New user has been created successfully'})
+            {'message': 'New user has been created successfully'})
         response.status_code = 201
         return response
 
@@ -237,7 +237,7 @@ class MenuItems(Resource):
             return jsonify({'message': 'Menu item already exists'})
         post_menu_items(request_data["name"], request_data["price"], request_data[
                         "description"], request_data["image"])
-        response = jsonify({'Menu': 'Food item created successfully'})
+        response = jsonify({'message': 'Food item created successfully'})
         response.status_code = 201
         return response
 
@@ -293,7 +293,7 @@ class OrderItems(Resource):
             return response
         post_order_item(request_data["name"], request_data[
             'address'], request_data['quantity'], active_user['id'])
-        response = jsonify({'Orders': 'Order created successfully'})
+        response = jsonify({'message': 'Order created successfully'})
         response.status_code = 201
         return response
 
@@ -376,7 +376,7 @@ class OrderItem(Resource):
             response_data.status_code = 404
             return response_data
         update_order(request_data['status'], order_id)
-        response = jsonify({'Order': 'Order Status updated successfully'})
+        response = jsonify({'message': 'Order Status updated successfully'})
         response.status_code = 200
         return response
 
