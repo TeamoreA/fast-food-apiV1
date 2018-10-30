@@ -153,11 +153,20 @@ def single_menu_id(menu_id):
     return menu_item
 
 
-def update_order(status, order_id):
-    """Updates an order"""
+def update_order_status(status, order_id):
+    """Updates an order_status"""
     cur = conn.cursor()
     cur.execute('UPDATE orders SET status = (%s) WHERE id = (%s);',
                 (status, order_id))
+    cur.close()
+    conn.commit()
+
+
+def update_menu(name, price, description, image, menu_id):
+    """Update menu item"""
+    cur = conn.cursor()
+    cur.execute('UPDATE food_items SET name = (%s), price = (%s), description = (%s), image = (%s) WHERE id = (%s);',
+                (name, price, description, image, menu_id))
     cur.close()
     conn.commit()
 

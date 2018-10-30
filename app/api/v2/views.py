@@ -11,7 +11,7 @@ from .datamodels import single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order, get_all_users, single_menu_id, delete_menu
+    single_order_id, update_order_status, get_all_users, single_menu_id, delete_menu, update_menu
 
 
 conn = psycopg2.connect(Config.DATABASE_URL)
@@ -264,6 +264,38 @@ class SingleMenu(Resource):
         response.status_code = 200
         return response
 
+    @token
+    def put(self, active_user, menu_id):
+        """updates an order"""
+        if not active_user['admin']:
+            response_data = jsonify(
+                {"message": "Cannot perform this action, Admin privilege required!"})
+            response_data.status_code = 403
+            return response_data
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('price', type=float, required=True,
+                            help="Price field is required")
+        parser.add_argument('description', type=str, required=True,
+                            help="Description field is required")
+        parser.add_argument('image', type=str, required=True,
+                            help="Image URL field is required")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
+        menu_item = single_menu_id(menu_id)
+        if not menu_item:
+            response_data = jsonify(
+                {'message': 'No menu item found with that id'})
+            response_data.status_code = 404
+            return response_data
+        update_menu(request_data["name"], request_data["price"], request_data[
+            "description"], request_data["image"])
+        response = jsonify({'message': 'Food item updated successfully'})
+        response.status_code = 200
+        return response
+
 
 class OrderItems(Resource):
     """major orders class"""
@@ -398,7 +430,7 @@ class OrderItem(Resource):
             response_data = jsonify({'message': 'No order found with that id'})
             response_data.status_code = 404
             return response_data
-        update_order(request_data['status'], order_id)
+        update_order_status(request_data['status'], order_id)
         response = jsonify({'message': 'Order Status updated successfully'})
         response.status_code = 200
         return response

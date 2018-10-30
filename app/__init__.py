@@ -5,7 +5,7 @@ from flask_restful import Resource, Api
 from instance.config import app_config
 from app.api.V1.views import FoodItem, FoodItems
 from app.api.v2.views import MenuItems, Users, SingleUser, OrderItems,\
-    OrderItem, Login, PromoteUser, UserOrders
+    OrderItem, Login, PromoteUser, UserOrders, SingleMenu
 from app.api.v2.database import Models
 
 
@@ -37,6 +37,7 @@ def create_app(config_name):
     api.add_resource(PromoteUser, '/api/v2/promote/<int:user_id>')
 
     api.add_resource(MenuItems, '/api/v2/menu')
+    api.add_resource(SingleMenu, '/api/v2/menu/<int:menu_id>')
 
     # redirect
     @app.route('/')
