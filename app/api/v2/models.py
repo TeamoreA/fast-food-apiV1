@@ -52,8 +52,9 @@ class Validators:
 
     def validate_name(self, name):
         """Validates the name"""
-        regex = "^[a-zA-Z_ ]+$"
-        return re.match(regex, name)
+        if name and name.strip():
+            regex = "^[a-zA-Z_ ]+$"
+            return re.match(regex, name)
 
     def valid_email(self, email):
         """validates the user email"""
@@ -66,11 +67,11 @@ class Validators:
             return status
 
     def validate_password(self, password):
-        '''validate the passwoord'''
+        '''validate the password'''
         if len(password) > 5:
             return password
 
     def validate_price(self, price):
         '''validate price to be a positive number'''
-        if (price.isdigit()) and (price > 0):
+        if(int(price) > 0):
             return price

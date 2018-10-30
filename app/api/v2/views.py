@@ -184,7 +184,7 @@ class Login(Resource):
         if check_password_hash(user[3], request_data['password']):
             token = jwt.encode({'id': user[0], 'exp': datetime.datetime.utcnow(
             ) + datetime.timedelta(minutes=60)}, Config.SECRET_KEY)
-            return jsonify({'message': 'You logged in successfully',
+            return jsonify({'message': 'Welcome ' + request_data['username'] + ', You logged in successfully',
                             'token': token.decode('UTF-8')})
         response = jsonify({'message': 'Login required!'})
         response.status_code = 401
@@ -385,9 +385,9 @@ class UserOrders(Resource):
         return response
 
     @token
-    def put(self, active_user, order_id):
+    def put(self, active_user, user_id):
         """updates an order"""
-        orders = single_order_id(order_id)
+        orders = single_order_id(user_id)
         if not orders:
             response_data = jsonify(
                 {"message": "No order found with that id"})
@@ -405,14 +405,14 @@ class UserOrders(Resource):
             return jsonify({'message': 'Invalid name!'})
         if not Validators().validate_price(request_data['quantity']):
             return jsonify({'message': 'Quantity must be a positive number greater than zero.'})
-        order = single_order_id(order_id)
+        order = single_order_id(user_id)
         if not order:
             response_data = jsonify(
                 {'message': 'No order found with that id'})
             response_data.status_code = 404
             return response_data
         update_order(request_data["name"], request_data["address"], request_data[
-            "quantity"], order_id)
+            "quantity"], user_id)
         response = jsonify({'message': 'Order item updated successfully'})
         response.status_code = 200
         return response
@@ -467,6 +467,7 @@ class OrderItem(Resource):
             response_data = jsonify({'message': 'No order found with that id'})
             response_data.status_code = 404
             return response_data
+
         update_order_status(request_data['status'], order_id)
         response = jsonify({'message': 'Order Status updated successfully'})
         response.status_code = 200
@@ -483,8 +484,11 @@ class OrderItem(Resource):
         user = single_user_id(order[5])
         if not user:
             return jsonify({'message': 'Permission denied! This is not your order item'})
-        if order[4] != 'Complete':
-            response = jsonify({'message': 'Order should be completed first!'})
+        if (order[4] == "Processing"):
+            resp = jsonify(
+                {'message': 'Can\'t perform this action!Order is being processed'})
+            resp.status_code = 403
+            return resp
         delete_order(order_id)
         conn.close()
         response = jsonify({'message': 'Order deleted successfully'})
