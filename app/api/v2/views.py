@@ -11,7 +11,7 @@ from .datamodels import single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order, get_all_users
+    single_order_id, update_order, get_all_users, single_menu_id, delete_menu
 
 
 conn = psycopg2.connect(Config.DATABASE_URL)
@@ -239,6 +239,29 @@ class MenuItems(Resource):
                         "description"], request_data["image"])
         response = jsonify({'message': 'Food item created successfully'})
         response.status_code = 201
+        return response
+
+
+class SingleMenu(Resource):
+    """Class for accessing individual food menus"""
+    @token
+    def delete(self, active_user, menu_id):
+        """deletes an oder"""
+        if not active_user['admin']:
+            response_data = jsonify(
+                {"message": "Cannot perform this action, Admin privilege required!"})
+            response_data.status_code = 403
+            return response_data
+        menu_item = single_menu_id(menu_id)
+        if not menu_item:
+            response_data = jsonify(
+                {'message': 'No menu item found with that id'})
+            response_data.status_code = 404
+            return response_data
+        delete_menu(menu_id)
+        conn.close()
+        response = jsonify({'message': 'Menu item deleted successfully'})
+        response.status_code = 200
         return response
 
 

@@ -144,6 +144,15 @@ def single_order_id(order_id):
     return order
 
 
+def single_menu_id(menu_id):
+    """selects specific menu item"""
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM food_items WHERE id = (%s);', (menu_id,))
+    menu_item = cur.fetchone()
+    cur.close()
+    return menu_item
+
+
 def update_order(status, order_id):
     """Updates an order"""
     cur = conn.cursor()
@@ -157,6 +166,14 @@ def delete_order(order_id):
     """delete an order"""
     cur = conn.cursor()
     cur.execute('DELETE FROM orders WHERE id = (%s);', (order_id,))
+    cur.close()
+    conn.commit()
+
+
+def delete_menu(menu_id):
+    """delete a menu item"""
+    cur = conn.cursor()
+    cur.execute('DELETE FROM food_items WHERE id = (%s);', (menu_id,))
     cur.close()
     conn.commit()
 
