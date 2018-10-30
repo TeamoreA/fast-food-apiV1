@@ -162,6 +162,15 @@ def update_order_status(status, order_id):
     conn.commit()
 
 
+def update_order(name, address, quantity, order_id):
+    """Updates an order_status"""
+    cur = conn.cursor()
+    cur.execute('UPDATE orders SET name = (%s), address = (%s), quantity = (%s) WHERE id = (%s);',
+                (name, address, quantity, order_id))
+    cur.close()
+    conn.commit()
+
+
 def update_menu(name, price, description, image, menu_id):
     """Update menu item"""
     cur = conn.cursor()

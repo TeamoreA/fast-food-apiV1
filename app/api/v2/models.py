@@ -69,3 +69,8 @@ class Validators:
         '''validate the passwoord'''
         if len(password) > 5:
             return password
+
+    def validate_price(self, price):
+        '''validate price to be a positive number'''
+        if (price.isdigit()) and (price > 0):
+            return price

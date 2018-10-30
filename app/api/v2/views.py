@@ -11,7 +11,8 @@ from .datamodels import single_user_email, single_user_name,\
     post_users, single_user_id, promote_user, update_user,\
     delete_user, post_menu_items, single_menu_name, get_all_menuitems,\
     get_all_orders, post_order_item, check_user_orders, delete_order,\
-    single_order_id, update_order_status, get_all_users, single_menu_id, delete_menu, update_menu
+    single_order_id, update_order_status, get_all_users, single_menu_id,\
+    delete_menu, update_menu, update_order
 
 
 conn = psycopg2.connect(Config.DATABASE_URL)
@@ -232,6 +233,8 @@ class MenuItems(Resource):
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_price(request_data['price']):
+            return jsonify({'message': 'Price must be a positive number greater than zero.'})
         food_item = single_menu_name(request_data["name"])
         if food_item:
             return jsonify({'message': 'Menu item already exists'})
@@ -284,6 +287,8 @@ class SingleMenu(Resource):
         request_data = parser.parse_args()
         if not Validators().validate_name(request_data['name']):
             return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_price(request_data['price']):
+            return jsonify({'message': 'Price must be a positive number greater than zero.'})
         menu_item = single_menu_id(menu_id)
         if not menu_item:
             response_data = jsonify(
@@ -291,7 +296,7 @@ class SingleMenu(Resource):
             response_data.status_code = 404
             return response_data
         update_menu(request_data["name"], request_data["price"], request_data[
-            "description"], request_data["image"])
+            "description"], request_data["image"], menu_id)
         response = jsonify({'message': 'Food item updated successfully'})
         response.status_code = 200
         return response
@@ -337,15 +342,14 @@ class OrderItems(Resource):
                             help="An integer should be input in this field")
         request_data = parser.parse_args()
         confirm_order = single_menu_name(request_data['name'])
-        if not Validators().validate_name(request_data['name']):
-            return jsonify({'message': 'Invalid name!'})
-
-        if not Validators().validate_name(request_data['address']):
-            return jsonify({'message': 'Invalid address!'})
         if not confirm_order:
             response = jsonify({'message': 'Food item not in our menu!'})
             response.status_code = 400
             return response
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_name(request_data['address']):
+            return jsonify({'message': 'Invalid address!'})
         post_order_item(request_data["name"], request_data[
             'address'], request_data['quantity'], active_user['id'])
         response = jsonify({'message': 'Order created successfully'})
@@ -377,6 +381,39 @@ class UserOrders(Resource):
             order_details['ordered_by'] = user[1]
             order_list.append(order_details)
         response = jsonify({'message': 'Users orders', 'orders': order_list})
+        response.status_code = 200
+        return response
+
+    @token
+    def put(self, active_user, order_id):
+        """updates an order"""
+        orders = single_order_id(order_id)
+        if not orders:
+            response_data = jsonify(
+                {"message": "No order found with that id"})
+            response_data.status_code = 404
+            return response_data
+        parser = reqparse.RequestParser()
+        parser.add_argument('name', type=str, required=True,
+                            help="name field is required")
+        parser.add_argument('address', type=str, required=True,
+                            help="Address field is required")
+        parser.add_argument('quantity', type=int, required=True,
+                            help="An integer should be input in this field")
+        request_data = parser.parse_args()
+        if not Validators().validate_name(request_data['name']):
+            return jsonify({'message': 'Invalid name!'})
+        if not Validators().validate_price(request_data['quantity']):
+            return jsonify({'message': 'Quantity must be a positive number greater than zero.'})
+        order = single_order_id(order_id)
+        if not order:
+            response_data = jsonify(
+                {'message': 'No order found with that id'})
+            response_data.status_code = 404
+            return response_data
+        update_order(request_data["name"], request_data["address"], request_data[
+            "quantity"], order_id)
+        response = jsonify({'message': 'Order item updated successfully'})
         response.status_code = 200
         return response
 
