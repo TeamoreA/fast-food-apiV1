@@ -36,10 +36,7 @@ class TestBase(unittest.TestCase):
             "name": "Pizza",
             "description": "New Pizza in town",
             "price": 200,
-            "image": "https://www.google.com/search?q=pizza+image&tbm=isch&s\
-            ource=iu&ictx=1&fir=weYUbmtLA6u8aM%253A%252CBXLCBnKOsGEEmM%252C_&usg=AI\
-            4_-kTid_lIE3QquWoKMl_opo9N49uugA&sa=X&ved=2ahUKEwia8cH4mZzeAhUSPewKHQigC58Q9QEwB\
-            XoECAYQDg#imgrc=weYUbmtLA6u8aM:"
+            "image": "https://www.google.com"
         }
         self.sample_order_data = {
             "name": "Pizza",
