@@ -411,6 +411,11 @@ class UserOrders(Resource):
                 {'message': 'No order found with that id'})
             response_data.status_code = 404
             return response_data
+        if (order[4] == "Processing"):
+            resp = jsonify(
+                {'message': 'Can\'t perform this action!Order is being processed'})
+            resp.status_code = 403
+            return resp
         update_order(request_data["name"], request_data["address"], request_data[
             "quantity"], user_id)
         response = jsonify({'message': 'Order item updated successfully'})
